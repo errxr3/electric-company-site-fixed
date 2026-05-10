@@ -1,9 +1,10 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { priceItems } from '@/lib/priceItems';
 
 const currency = new Intl.NumberFormat('ru-RU');
+const CALCULATOR_STORAGE_KEY = 'voltforce-calculator-summary';
 
 export function PriceCalculator() {
   const [quantities, setQuantities] = useState<Record<string, number>>({});
@@ -15,6 +16,28 @@ export function PriceCalculator() {
 
   const selected = priceItems.filter((item) => (quantities[item.id] || 0) > 0);
   const categories = Array.from(new Set(priceItems.map((item) => item.category)));
+
+  const summary = useMemo(() => {
+    if (!selected.length) return '';
+
+    const lines = selected.map((item) => {
+      const qty = quantities[item.id] || 0;
+      const itemTotal = qty * item.price;
+      return `- ${item.title}: ${qty} ${item.unit} x ${currency.format(item.price)} ₽ = ${currency.format(itemTotal)} ₽`;
+    });
+
+    return ['Расчет из калькулятора:', ...lines, `Итого от: ${currency.format(total)} ₽`].join('\n');
+  }, [quantities, selected, total]);
+
+  useEffect(() => {
+    if (summary) {
+      window.localStorage.setItem(CALCULATOR_STORAGE_KEY, summary);
+    } else {
+      window.localStorage.removeItem(CALCULATOR_STORAGE_KEY);
+    }
+
+    window.dispatchEvent(new CustomEvent('voltforce-calculator-updated', { detail: summary }));
+  }, [summary]);
 
   function setQuantity(id: string, value: string) {
     const next = Math.max(0, Number(value) || 0);
