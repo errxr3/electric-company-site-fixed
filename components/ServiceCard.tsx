@@ -1,0 +1,2 @@
+import Link from 'next/link';
+export function ServiceCard({s}:{s:{title:string;description:string;priceFrom:number}}){return <article className="card p-6 transition hover:-translate-y-1 hover:shadow-glow"><h3 className="text-2xl font-black">{s.title}</h3><p className="mt-3 text-zinc-400">{s.description}</p><p className="my-5 text-xl font-black text-power">от {s.priceFrom.toLocaleString('ru-RU')} ₽</p><Link className="btn btn-ghost" href="/#lead">Заказать</Link></article>}

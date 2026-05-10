@@ -1,0 +1,3 @@
+import { NextResponse } from 'next/server';import { getServerSession } from 'next-auth';import { prisma } from '@/lib/prisma';import { portfolioSchema } from '@/lib/validation';import { authOptions } from '@/lib/auth';
+export async function GET(){return NextResponse.json(await prisma.portfolioItem.findMany({orderBy:{completedAt:'desc'}}))}
+export async function POST(req:Request){const s=await getServerSession(authOptions);if(!s)return NextResponse.json({error:'Unauthorized'},{status:401});const p=portfolioSchema.safeParse(await req.json());if(!p.success)return NextResponse.json({error:'Validation error'},{status:400});return NextResponse.json(await prisma.portfolioItem.create({data:p.data}),{status:201})}
