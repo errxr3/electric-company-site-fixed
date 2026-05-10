@@ -4,6 +4,7 @@ import path from 'node:path';
 import Image from 'next/image';
 import Link from 'next/link';
 import sharp from 'sharp';
+import { del as delBlob, put } from '@vercel/blob';
 import { revalidatePath } from 'next/cache';
 import { getServerSession } from 'next-auth';
 import { redirect } from 'next/navigation';
@@ -17,11 +18,12 @@ export const runtime = 'nodejs';
 
 const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'portfolio');
 const PAGE_SIZE = 5;
+const MAX_UPLOAD_SIZE = 4 * 1024 * 1024;
 
 async function saveImage(file: FormDataEntryValue | null) {
   if (!(file instanceof File) || file.size === 0) return undefined;
   if (!file.type.startsWith('image/')) throw new Error('Можно загружать только изображения');
-  if (file.size > 12 * 1024 * 1024) throw new Error('Размер фото должен быть до 12 МБ');
+  if (file.size > MAX_UPLOAD_SIZE) throw new Error('Размер фото должен быть до 4 МБ');
 
   const filename = `${randomUUID()}.webp`;
   const optimized = await sharp(Buffer.from(await file.arrayBuffer()))
@@ -30,6 +32,15 @@ async function saveImage(file: FormDataEntryValue | null) {
     .webp({ quality: 78 })
     .toBuffer();
 
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    const blob = await put(`portfolio/${filename}`, optimized, {
+      access: 'public',
+      contentType: 'image/webp',
+    });
+
+    return blob.url;
+  }
+
   await mkdir(uploadDir, { recursive: true });
   await writeFile(path.join(uploadDir, filename), optimized);
 
@@ -37,6 +48,11 @@ async function saveImage(file: FormDataEntryValue | null) {
 }
 
 async function deleteUpload(src?: string | null) {
+  if (src?.startsWith('https://')) {
+    await delBlob(src).catch(() => undefined);
+    return;
+  }
+
   if (!src?.startsWith('/uploads/portfolio/')) return;
 
   const filePath = path.join(process.cwd(), 'public', src);
@@ -154,7 +170,7 @@ export default async function PortfolioAdmin({
           Фото 2
           <input accept="image/*" name="afterImage" type="file" />
         </label>
-        <p className="text-sm text-zinc-500">Фото автоматически сжимаются до WebP, чтобы сайт быстрее открывался.</p>
+        <p className="text-sm text-zinc-500">Фото автоматически сжимаются до WebP. На Vercel загружайте фото до 4 МБ.</p>
         <button className="btn btn-primary">Добавить</button>
       </form>
 
