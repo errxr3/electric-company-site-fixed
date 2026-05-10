@@ -6,6 +6,7 @@ import { AdminNav } from '@/components/AdminNav';
 import { ConfirmSubmitButton } from '@/components/ConfirmSubmitButton';
 import { authOptions } from '@/lib/auth';
 import { writeAuditLog } from '@/lib/audit';
+import { parseLeadMessage } from '@/lib/leadCalculator';
 import { prisma } from '@/lib/prisma';
 
 const statusMeta: Record<LeadStatus, { label: string; dot: string }> = {
@@ -115,6 +116,9 @@ export default async function Leads({
         {leads.length === 0 && <div className="card p-5 text-zinc-400">Заявки не найдены.</div>}
         {leads.map((lead) => {
           const meta = statusMeta[lead.status] ?? statusMeta.NEW;
+          const parsedMessage = parseLeadMessage(lead.message);
+          const hasCalculator = parsedMessage.calculatorLines.length > 0;
+          const serviceLabel = lead.service?.title || (hasCalculator ? 'Расчет из калькулятора' : 'Без услуги');
 
           return (
             <article className="card grid gap-4 p-5 md:grid-cols-[1.1fr_1fr_1fr_1fr_180px_140px] md:items-center" key={lead.id}>
@@ -126,7 +130,7 @@ export default async function Leads({
                 <p className="mt-1 text-sm text-zinc-500">{meta.label}</p>
               </div>
               <span>{lead.phone}</span>
-              <span>{lead.service?.title || 'Без услуги'}</span>
+              <span className={hasCalculator ? 'font-bold text-power' : ''}>{serviceLabel}</span>
               <span>{new Date(lead.createdAt).toLocaleString('ru-RU')}</span>
               <form action={setStatus} className="grid gap-2">
                 <input type="hidden" name="id" value={lead.id} />
@@ -143,7 +147,34 @@ export default async function Leads({
                 <input type="hidden" name="id" value={lead.id} />
                 <ConfirmSubmitButton message="Удалить эту заявку?">Удалить</ConfirmSubmitButton>
               </form>
-              {lead.message && <p className="text-zinc-400 md:col-span-6">{lead.message}</p>}
+              {(parsedMessage.plainMessage || hasCalculator) && (
+                <div className="grid gap-4 md:col-span-6">
+                  {parsedMessage.plainMessage && (
+                    <div className="rounded-2xl bg-zinc-900/70 p-4 text-zinc-300">
+                      <b className="text-white">Комментарий клиента</b>
+                      <p className="mt-2 whitespace-pre-wrap">{parsedMessage.plainMessage}</p>
+                    </div>
+                  )}
+                  {hasCalculator && (
+                    <div className="overflow-hidden rounded-2xl border border-power/30 bg-power/5">
+                      <div className="flex flex-col gap-1 border-b border-power/20 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                        <b className="text-power">Расчет из калькулятора</b>
+                        {parsedMessage.calculatorTotal && <span className="font-black text-white">Итого от: {parsedMessage.calculatorTotal}</span>}
+                      </div>
+                      <div className="divide-y divide-white/10">
+                        {parsedMessage.calculatorLines.map((line, index) => (
+                          <div className="grid gap-2 px-4 py-3 text-sm text-zinc-300 md:grid-cols-[1fr_110px_120px_120px]" key={`${line.title}-${index}`}>
+                            <span className="text-white">{line.title}</span>
+                            <span>{line.quantity}</span>
+                            <span>{line.price}</span>
+                            <b className="text-power">{line.total}</b>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </article>
           );
         })}

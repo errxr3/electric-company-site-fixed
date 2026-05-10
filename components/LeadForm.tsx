@@ -63,7 +63,7 @@ export function LeadForm(_: LeadFormProps) {
       {calculatorSummary && (
         <div className="rounded-2xl border border-power/30 bg-power/10 p-4 text-sm text-zinc-200">
           <b className="text-power">В заявку добавится расчет из калькулятора:</b>
-          <pre className="mt-2 whitespace-pre-wrap font-sans text-zinc-300">{calculatorSummary}</pre>
+          <pre className="mt-2 whitespace-pre-wrap font-sans text-zinc-300">{calculatorSummary.replace('[calculator]\n', '').replace('\n[/calculator]', '')}</pre>
         </div>
       )}
       <button className="btn btn-primary">Отправить</button>

@@ -23,10 +23,10 @@ export function PriceCalculator() {
     const lines = selected.map((item) => {
       const qty = quantities[item.id] || 0;
       const itemTotal = qty * item.price;
-      return `- ${item.title}: ${qty} ${item.unit} x ${currency.format(item.price)} ₽ = ${currency.format(itemTotal)} ₽`;
+      return `${item.title} | ${qty} ${item.unit} | ${currency.format(item.price)} ₽ | ${currency.format(itemTotal)} ₽`;
     });
 
-    return ['Расчет из калькулятора:', ...lines, `Итого от: ${currency.format(total)} ₽`].join('\n');
+    return ['[calculator]', ...lines, `Итого от | | | ${currency.format(total)} ₽`, '[/calculator]'].join('\n');
   }, [quantities, selected, total]);
 
   useEffect(() => {
