@@ -9,6 +9,8 @@ import { featuredPriceItems } from '@/lib/priceItems';
 import { prisma } from '@/lib/prisma';
 import { getSiteSettings, phoneHref } from '@/lib/settings';
 
+export const dynamic = 'force-dynamic';
+
 const avitoLinks = [
   {
     title: 'Авито: услуги электрика',
