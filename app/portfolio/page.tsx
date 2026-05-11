@@ -5,6 +5,7 @@ import { PortfolioGallery } from '@/components/PortfolioGallery';
 import { prisma } from '@/lib/prisma';
 
 const PAGE_SIZE = 6;
+export const revalidate = 60;
 
 export default async function Portfolio({
   searchParams,

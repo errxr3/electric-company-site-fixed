@@ -4,7 +4,7 @@ import { LeadForm } from '@/components/LeadForm';
 import { ServiceAreaMap } from '@/components/ServiceAreaMap';
 import { getSiteSettings } from '@/lib/settings';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 const avitoLinks = [
   {

@@ -9,7 +9,7 @@ import { featuredPriceItems } from '@/lib/priceItems';
 import { prisma } from '@/lib/prisma';
 import { getSiteSettings, phoneHref } from '@/lib/settings';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 const avitoLinks = [
   {
@@ -37,7 +37,7 @@ export default async function Home() {
     <>
       <Header />
       <main>
-        <section className="container grid min-h-[calc(100vh-5rem)] items-center gap-8 py-10 lg:grid-cols-[1.05fr_0.95fr]">
+        <section className="container grid items-center gap-8 py-8 lg:min-h-[calc(100vh-5rem)] lg:grid-cols-[1.05fr_0.95fr] lg:py-10">
           <div>
             <p className="mb-4 font-bold text-power">Тверь и Тверская область</p>
             <h1 className="max-w-3xl text-4xl font-black leading-[1.05] sm:text-5xl lg:text-6xl">
@@ -84,7 +84,7 @@ export default async function Home() {
               width={520}
               height={520}
               priority
-              className="mx-auto max-h-[52vh] w-auto rounded-3xl object-contain"
+              className="mx-auto max-h-[34vh] w-auto rounded-3xl object-contain sm:max-h-[52vh]"
             />
           </div>
         </section>

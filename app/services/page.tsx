@@ -3,7 +3,7 @@ import { Header } from '@/components/Header';
 import { ServiceCard } from '@/components/ServiceCard';
 import { prisma } from '@/lib/prisma';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 export default async function Services() {
   const services = await prisma.service.findMany({ orderBy: { createdAt: 'desc' } });
