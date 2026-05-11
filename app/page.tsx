@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import type { Metadata } from 'next';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { LeadForm } from '@/components/LeadForm';
@@ -10,6 +11,13 @@ import { prisma } from '@/lib/prisma';
 import { getSiteSettings, phoneHref } from '@/lib/settings';
 
 export const revalidate = 60;
+
+export const metadata: Metadata = {
+  title: 'Электрик Тверь — электромонтажные работы под ключ',
+  description:
+    'VolteForce выполняет электромонтажные работы в Твери и Тверской области: проводка, электрощиты, розетки, освещение, диагностика и ремонт электрики.',
+  alternates: { canonical: '/' },
+};
 
 const avitoLinks = [
   {

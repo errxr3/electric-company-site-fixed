@@ -3,8 +3,15 @@ import { Footer } from '@/components/Footer';
 import { LeadForm } from '@/components/LeadForm';
 import { ServiceAreaMap } from '@/components/ServiceAreaMap';
 import { getSiteSettings } from '@/lib/settings';
+import type { Metadata } from 'next';
 
 export const revalidate = 60;
+
+export const metadata: Metadata = {
+  title: 'Контакты электрика в Твери',
+  description: 'Связаться с VolteForce: электрик и электромонтажные работы по Твери и Тверской области.',
+  alternates: { canonical: '/contacts' },
+};
 
 const avitoLinks = [
   {

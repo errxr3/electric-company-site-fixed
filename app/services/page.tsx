@@ -2,8 +2,15 @@ import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
 import { ServiceCard } from '@/components/ServiceCard';
 import { prisma } from '@/lib/prisma';
+import type { Metadata } from 'next';
 
 export const revalidate = 60;
+
+export const metadata: Metadata = {
+  title: 'Услуги электрика в Твери',
+  description: 'Прайс на услуги электрика и электромонтажные работы в Твери: розетки, освещение, проводка, щиты, диагностика.',
+  alternates: { canonical: '/services' },
+};
 
 export default async function Services() {
   const services = await prisma.service.findMany({ orderBy: { createdAt: 'desc' } });

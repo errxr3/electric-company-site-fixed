@@ -1,8 +1,15 @@
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { prisma } from '@/lib/prisma';
+import type { Metadata } from 'next';
 
 export const revalidate = 60;
+
+export const metadata: Metadata = {
+  title: 'Отзывы об электрике VolteForce',
+  description: 'Отзывы клиентов о работе электрика и электромонтажных услугах VolteForce в Твери.',
+  alternates: { canonical: '/reviews' },
+};
 
 const avitoLinks = [
   {

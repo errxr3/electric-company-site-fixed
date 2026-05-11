@@ -3,9 +3,16 @@ import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
 import { PortfolioGallery } from '@/components/PortfolioGallery';
 import { prisma } from '@/lib/prisma';
+import type { Metadata } from 'next';
 
 const PAGE_SIZE = 6;
 export const revalidate = 60;
+
+export const metadata: Metadata = {
+  title: 'Портфолио электромонтажных работ в Твери',
+  description: 'Примеры электромонтажных работ VolteForce в Твери и Тверской области.',
+  alternates: { canonical: '/portfolio' },
+};
 
 export default async function Portfolio({
   searchParams,
