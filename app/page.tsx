@@ -37,10 +37,10 @@ export default async function Home() {
     <>
       <Header />
       <main>
-        <section className="container grid items-center gap-8 py-8 lg:min-h-[calc(100vh-5rem)] lg:grid-cols-[1.05fr_0.95fr] lg:py-10">
+        <section className="container grid items-center gap-8 pb-12 pt-8 lg:min-h-[calc(100vh-5rem)] lg:grid-cols-[1.05fr_0.95fr] lg:py-10">
           <div>
             <p className="mb-4 font-bold text-power">Тверь и Тверская область</p>
-            <h1 className="max-w-3xl text-4xl font-black leading-[1.05] sm:text-5xl lg:text-6xl">
+            <h1 className="max-w-3xl break-words text-[2rem] font-black leading-[1.08] sm:text-5xl lg:text-6xl">
               Электромонтажные работы под ключ
             </h1>
             <p className="mt-6 max-w-2xl text-lg text-zinc-300 sm:text-xl">
@@ -77,7 +77,7 @@ export default async function Home() {
               ))}
             </div>
           </div>
-          <div className="card p-5 shadow-glow sm:p-8">
+          <div className="card mb-8 p-5 shadow-glow sm:mb-0 sm:p-8">
             <Image
               src="/logo.webp"
               alt="Логотип компании VoltForce"
@@ -89,7 +89,7 @@ export default async function Home() {
           </div>
         </section>
 
-        <section className="container grid gap-5 py-12 md:grid-cols-3">
+        <section className="container grid gap-5 pb-12 pt-4 md:grid-cols-3 md:py-12">
           {['Гарантия на работы', 'Выезд и диагностика', 'Работа по Тверской области'].map((title) => (
             <div className="card p-6" key={title}>
               <h3 className="text-xl font-black text-power">{title}</h3>
