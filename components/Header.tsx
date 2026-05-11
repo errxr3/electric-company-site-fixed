@@ -2,11 +2,11 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 const nav = [
-  ['/services', 'Услуги'],
-  ['/#calculator', 'Калькулятор'],
-  ['/portfolio', 'Портфолио'],
-  ['/reviews', 'Отзывы'],
-  ['/contacts', 'Контакты'],
+  { href: '/services', title: 'Услуги', mobile: true },
+  { href: '/#calculator', title: 'Калькулятор', mobile: true },
+  { href: '/portfolio', title: 'Портфолио', mobile: true },
+  { href: '/reviews', title: 'Отзывы', mobile: true },
+  { href: '/contacts', title: 'Контакты', mobile: false },
 ];
 
 export function Header() {
@@ -25,10 +25,10 @@ export function Header() {
             Volt<span className="text-power">Force</span>
           </b>
         </Link>
-        <nav className="scrollbar-none order-3 col-span-2 flex w-full snap-x gap-2 overflow-x-auto pb-1 md:order-none md:col-span-1 md:justify-center md:gap-5 md:overflow-visible md:pb-0">
-          {nav.map(([href, title]) => (
+        <nav className="order-3 col-span-2 grid w-full grid-cols-4 gap-2 md:order-none md:col-span-1 md:flex md:w-auto md:justify-center md:gap-5">
+          {nav.map(({ href, title, mobile }) => (
             <Link
-              className="shrink-0 snap-start rounded-full border border-white/10 px-3 py-2 text-center text-sm leading-5 text-zinc-300 hover:border-power hover:text-power md:border-0 md:px-0 md:py-0"
+              className={`${mobile ? '' : 'hidden md:inline'} min-h-10 rounded-full border border-white/10 px-2 py-2 text-center text-xs leading-5 text-zinc-300 hover:border-power hover:text-power sm:text-sm md:min-h-0 md:border-0 md:px-0 md:py-0`}
               href={href}
               key={href}
             >
