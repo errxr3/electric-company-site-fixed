@@ -20,8 +20,10 @@ export function formatRussianPhoneInput(value: string) {
   let digits = value.replace(/\D/g, '');
   if (digits.startsWith('8')) digits = `7${digits.slice(1)}`;
   if (digits.length === 10) digits = `7${digits}`;
-  if (!digits.startsWith('7')) digits = `7${digits}`;
+  if (digits.length > 0 && !digits.startsWith('7')) digits = `7${digits}`;
   digits = digits.slice(0, 11);
+
+  if (!digits) return '';
 
   const parts = [
     '+7',

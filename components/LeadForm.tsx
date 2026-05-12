@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { formatRussianPhoneInput } from '@/lib/phone';
+import { formatRussianPhoneInput, normalizeRussianPhone } from '@/lib/phone';
 
 type LeadFormProps = {
   services?: { id: string; title: string }[];
@@ -12,7 +12,7 @@ const CALCULATOR_STORAGE_KEY = 'voltforce-calculator-summary';
 export function LeadForm(_: LeadFormProps) {
   const [ok, setOk] = useState(false);
   const [err, setErr] = useState('');
-  const [phone, setPhone] = useState('+7');
+  const [phone, setPhone] = useState('');
   const [calculatorSummary, setCalculatorSummary] = useState('');
 
   useEffect(() => {
@@ -31,13 +31,19 @@ export function LeadForm(_: LeadFormProps) {
     setErr('');
     setOk(false);
 
+    const normalizedPhone = normalizeRussianPhone(phone);
+    if (!normalizedPhone) {
+      setErr('Укажите российский номер в формате +7 (999) 123-45-67.');
+      return;
+    }
+
     const form = event.currentTarget;
     const data = Object.fromEntries(new FormData(form));
     const message = String(data.message || '').trim();
     const calculator = calculatorSummary.trim();
     const payload = {
       ...data,
-      phone,
+      phone: normalizedPhone,
       message: [message, calculator].filter(Boolean).join('\n\n'),
     };
 
@@ -50,7 +56,7 @@ export function LeadForm(_: LeadFormProps) {
     const response = (await res.json().catch(() => ({}))) as { error?: string };
     if (res.ok) {
       setOk(true);
-      setPhone('+7');
+      setPhone('');
       form.reset();
       window.localStorage.removeItem(CALCULATOR_STORAGE_KEY);
       setCalculatorSummary('');
@@ -65,9 +71,10 @@ export function LeadForm(_: LeadFormProps) {
       <input name="name" placeholder="Имя" required />
       <input
         inputMode="tel"
+        maxLength={24}
         name="phone"
-        onChange={(event) => setPhone(formatRussianPhoneInput(event.target.value))}
-        pattern="^\+7 \(\d{3}\) \d{3}-\d{2}-\d{2}$"
+        onBlur={() => setPhone((value) => formatRussianPhoneInput(value))}
+        onChange={(event) => setPhone(event.target.value)}
         placeholder="+7 (999) 123-45-67"
         required
         type="tel"
