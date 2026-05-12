@@ -13,6 +13,13 @@ enum LeadStatus {
   DONE
 }
 
+enum ReviewStatus {
+  PENDING
+  PUBLISHED
+  HIDDEN
+  REJECTED
+}
+
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
@@ -50,7 +57,11 @@ model Review {
   rating      Int
   text        String
   isPublished Boolean  @default(true)
+  status      ReviewStatus @default(PUBLISHED)
+  ipHash      String?
+  userAgent   String?
   createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
 }
 
 model PortfolioItem {

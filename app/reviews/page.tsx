@@ -1,7 +1,8 @@
-import { Header } from '@/components/Header';
-import { Footer } from '@/components/Footer';
-import { prisma } from '@/lib/prisma';
 import type { Metadata } from 'next';
+import { Footer } from '@/components/Footer';
+import { Header } from '@/components/Header';
+import { PublicReviewForm } from '@/components/PublicReviewForm';
+import { prisma } from '@/lib/prisma';
 
 export const revalidate = 60;
 
@@ -24,7 +25,7 @@ const avitoLinks = [
 
 export default async function Reviews() {
   const reviews = await prisma.review.findMany({
-    where: { isPublished: true },
+    where: { isPublished: true, status: 'PUBLISHED' },
     orderBy: { createdAt: 'desc' },
   });
 
@@ -34,9 +35,15 @@ export default async function Reviews() {
       <main className="container py-16">
         <p className="font-bold text-power">Отзывы клиентов</p>
         <h1 className="mt-2 text-5xl font-black">Отзывы</h1>
+        <p className="mt-4 max-w-2xl text-zinc-400">
+          Здесь можно оставить отзыв о работе. Перед публикацией он проходит проверку администратором.
+        </p>
+
+        <PublicReviewForm turnstileSiteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY} />
+
         <div className="mt-8 flex flex-wrap gap-3">
           {avitoLinks.map((link) => (
-            <a className="btn btn-primary" href={link.href} key={link.href} rel="noreferrer" target="_blank">
+            <a className="btn btn-ghost" href={link.href} key={link.href} rel="noreferrer" target="_blank">
               {link.title}
             </a>
           ))}

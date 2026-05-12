@@ -34,7 +34,7 @@ export default async function Home() {
   const [services, reviews, settings] = await Promise.all([
     prisma.service.findMany({ take: 6, orderBy: { isPopular: 'desc' } }),
     prisma.review.findMany({
-      where: { isPublished: true },
+      where: { isPublished: true, status: 'PUBLISHED' },
       take: 3,
       orderBy: { createdAt: 'desc' },
     }),
