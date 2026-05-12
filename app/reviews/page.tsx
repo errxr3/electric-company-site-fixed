@@ -35,9 +35,7 @@ export default async function Reviews() {
       <main className="container py-16">
         <p className="font-bold text-power">Отзывы клиентов</p>
         <h1 className="mt-2 text-5xl font-black">Отзывы</h1>
-        <p className="mt-4 max-w-2xl text-zinc-400">
-          Здесь можно оставить отзыв о работе. Перед публикацией он проходит проверку администратором.
-        </p>
+        <p className="mt-4 max-w-2xl text-zinc-400">Здесь можно оставить отзыв о работе.</p>
 
         <PublicReviewForm turnstileSiteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY} />
 
