@@ -6,6 +6,7 @@ import { AdminNav } from '@/components/AdminNav';
 import { ConfirmSubmitButton } from '@/components/ConfirmSubmitButton';
 import { authOptions } from '@/lib/auth';
 import { writeAuditLog } from '@/lib/audit';
+import { formatMoscowDateTime } from '@/lib/formatDate';
 import { prisma } from '@/lib/prisma';
 
 type ReviewStatusValue = 'PENDING' | 'PUBLISHED' | 'HIDDEN' | 'REJECTED';
@@ -173,7 +174,7 @@ export default async function ReviewsAdmin({
                   {statusLabels[status]}
                 </span>
                 {item.rating <= 3 ? <span className="text-sm font-bold text-red-400">Низкая оценка</span> : null}
-                <span className="text-sm text-zinc-500">{item.createdAt.toLocaleString('ru-RU')}</span>
+                <span className="text-sm text-zinc-500">{formatMoscowDateTime(item.createdAt)}</span>
               </div>
               <form action={update} className="grid gap-3">
                 <input type="hidden" name="id" value={item.id} />

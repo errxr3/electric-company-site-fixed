@@ -6,6 +6,7 @@ import { AdminNav } from '@/components/AdminNav';
 import { ConfirmSubmitButton } from '@/components/ConfirmSubmitButton';
 import { authOptions } from '@/lib/auth';
 import { writeAuditLog } from '@/lib/audit';
+import { formatMoscowDateTime } from '@/lib/formatDate';
 import { parseLeadMessage } from '@/lib/leadCalculator';
 import { prisma } from '@/lib/prisma';
 
@@ -131,7 +132,7 @@ export default async function Leads({
               </div>
               <span>{lead.phone}</span>
               <span className={hasCalculator ? 'font-bold text-power' : ''}>{serviceLabel}</span>
-              <span>{new Date(lead.createdAt).toLocaleString('ru-RU')}</span>
+              <span>{formatMoscowDateTime(lead.createdAt)}</span>
               <form action={setStatus} className="grid gap-2">
                 <input type="hidden" name="id" value={lead.id} />
                 <select name="status" defaultValue={lead.status}>
