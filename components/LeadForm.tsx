@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { formatRussianPhoneInput } from '@/lib/phone';
 
 type LeadFormProps = {
   services?: { id: string; title: string }[];
@@ -11,6 +12,7 @@ const CALCULATOR_STORAGE_KEY = 'voltforce-calculator-summary';
 export function LeadForm(_: LeadFormProps) {
   const [ok, setOk] = useState(false);
   const [err, setErr] = useState('');
+  const [phone, setPhone] = useState('+7');
   const [calculatorSummary, setCalculatorSummary] = useState('');
 
   useEffect(() => {
@@ -27,6 +29,7 @@ export function LeadForm(_: LeadFormProps) {
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setErr('');
+    setOk(false);
 
     const form = event.currentTarget;
     const data = Object.fromEntries(new FormData(form));
@@ -34,6 +37,7 @@ export function LeadForm(_: LeadFormProps) {
     const calculator = calculatorSummary.trim();
     const payload = {
       ...data,
+      phone,
       message: [message, calculator].filter(Boolean).join('\n\n'),
     };
 
@@ -43,13 +47,15 @@ export function LeadForm(_: LeadFormProps) {
       body: JSON.stringify(payload),
     });
 
+    const response = (await res.json().catch(() => ({}))) as { error?: string };
     if (res.ok) {
       setOk(true);
+      setPhone('+7');
       form.reset();
       window.localStorage.removeItem(CALCULATOR_STORAGE_KEY);
       setCalculatorSummary('');
     } else {
-      setErr('Проверьте поля формы.');
+      setErr(response.error === 'Invalid phone' ? 'Укажите российский номер в формате +7 (999) 123-45-67.' : 'Проверьте поля формы.');
     }
   }
 
@@ -57,7 +63,16 @@ export function LeadForm(_: LeadFormProps) {
     <form onSubmit={submit} className="card grid gap-4 p-6" id="lead">
       <h2 className="text-3xl font-black">Оставить заявку</h2>
       <input name="name" placeholder="Имя" required />
-      <input name="phone" placeholder="Телефон" required />
+      <input
+        inputMode="tel"
+        name="phone"
+        onChange={(event) => setPhone(formatRussianPhoneInput(event.target.value))}
+        pattern="^\+7 \(\d{3}\) \d{3}-\d{2}-\d{2}$"
+        placeholder="+7 (999) 123-45-67"
+        required
+        type="tel"
+        value={phone}
+      />
       <input name="email" placeholder="Email" />
       <textarea name="message" placeholder="Что нужно сделать?" rows={4} />
       {calculatorSummary && (

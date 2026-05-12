@@ -8,6 +8,7 @@ import { authOptions } from '@/lib/auth';
 import { writeAuditLog } from '@/lib/audit';
 import { formatMoscowDateTime } from '@/lib/formatDate';
 import { parseLeadMessage } from '@/lib/leadCalculator';
+import { getRussianPhoneDigits } from '@/lib/phone';
 import { prisma } from '@/lib/prisma';
 
 const statusMeta: Record<LeadStatus, { label: string; dot: string }> = {
@@ -30,6 +31,16 @@ async function setStatus(formData: FormData) {
   const lead = await prisma.lead.update({ where: { id }, data: { status } });
 
   await writeAuditLog('update', 'lead', `Заявка ${lead.name} переведена в статус "${statusMeta[status].label}"`, id);
+  revalidatePath('/admin/leads');
+}
+
+async function markDone(formData: FormData) {
+  'use server';
+
+  const id = String(formData.get('id'));
+  const lead = await prisma.lead.update({ where: { id }, data: { status: LeadStatus.DONE } });
+
+  await writeAuditLog('update', 'lead', `Заявка ${lead.name} отмечена как обработанная`, id);
   revalidatePath('/admin/leads');
 }
 
@@ -120,9 +131,14 @@ export default async function Leads({
           const parsedMessage = parseLeadMessage(lead.message);
           const hasCalculator = parsedMessage.calculatorLines.length > 0;
           const serviceLabel = lead.service?.title || (hasCalculator ? 'Расчет из калькулятора' : 'Без услуги');
+          const phoneDigits = getRussianPhoneDigits(lead.phone);
+          const telHref = phoneDigits ? `tel:+${phoneDigits}` : `tel:${lead.phone}`;
+          const whatsappHref = phoneDigits
+            ? `https://wa.me/${phoneDigits}?text=${encodeURIComponent(`Здравствуйте, ${lead.name}! Вы оставляли заявку на сайте VolteForce.`)}`
+            : null;
 
           return (
-            <article className="card grid gap-4 p-5 md:grid-cols-[1.1fr_1fr_1fr_1fr_180px_140px] md:items-center" key={lead.id}>
+            <article className="card grid gap-4 p-5 md:grid-cols-[1.1fr_1fr_1fr_1fr_190px_150px] md:items-center" key={lead.id}>
               <div>
                 <div className="flex items-center gap-2">
                   <span className={`h-3 w-3 rounded-full ${meta.dot}`} aria-label={meta.label} />
@@ -130,7 +146,19 @@ export default async function Leads({
                 </div>
                 <p className="mt-1 text-sm text-zinc-500">{meta.label}</p>
               </div>
-              <span>{lead.phone}</span>
+              <div>
+                <span>{lead.phone}</span>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <a className="btn btn-ghost px-3 py-2 text-sm" href={telHref}>
+                    Позвонить
+                  </a>
+                  {whatsappHref ? (
+                    <a className="btn btn-ghost px-3 py-2 text-sm" href={whatsappHref} rel="noreferrer" target="_blank">
+                      WhatsApp
+                    </a>
+                  ) : null}
+                </div>
+              </div>
               <span className={hasCalculator ? 'font-bold text-power' : ''}>{serviceLabel}</span>
               <span>{formatMoscowDateTime(lead.createdAt)}</span>
               <form action={setStatus} className="grid gap-2">
@@ -144,10 +172,16 @@ export default async function Leads({
                 </select>
                 <button className="btn btn-primary">Сохранить</button>
               </form>
-              <form action={deleteLead}>
-                <input type="hidden" name="id" value={lead.id} />
-                <ConfirmSubmitButton message="Удалить эту заявку?">Удалить</ConfirmSubmitButton>
-              </form>
+              <div className="grid gap-2">
+                <form action={markDone}>
+                  <input type="hidden" name="id" value={lead.id} />
+                  <button className="btn btn-primary w-full">Обработано</button>
+                </form>
+                <form action={deleteLead}>
+                  <input type="hidden" name="id" value={lead.id} />
+                  <ConfirmSubmitButton message="Удалить эту заявку?">Удалить</ConfirmSubmitButton>
+                </form>
+              </div>
               {(parsedMessage.plainMessage || hasCalculator) && (
                 <div className="grid gap-4 md:col-span-6">
                   {parsedMessage.plainMessage && (
