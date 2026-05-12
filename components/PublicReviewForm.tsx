@@ -1,18 +1,42 @@
 'use client';
 
 import Script from 'next/script';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 type SubmitState = 'idle' | 'sending' | 'sent' | 'error';
+
+declare global {
+  interface Window {
+    onReviewTurnstileSuccess?: (token: string) => void;
+    onReviewTurnstileExpired?: () => void;
+  }
+}
 
 export function PublicReviewForm({ turnstileSiteKey }: { turnstileSiteKey?: string }) {
   const [state, setState] = useState<SubmitState>('idle');
   const [message, setMessage] = useState('');
+  const [turnstileToken, setTurnstileToken] = useState('');
+
+  useEffect(() => {
+    window.onReviewTurnstileSuccess = (token: string) => setTurnstileToken(token);
+    window.onReviewTurnstileExpired = () => setTurnstileToken('');
+
+    return () => {
+      delete window.onReviewTurnstileSuccess;
+      delete window.onReviewTurnstileExpired;
+    };
+  }, []);
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setState('sending');
     setMessage('');
+
+    if (turnstileSiteKey && !turnstileToken) {
+      setState('error');
+      setMessage('Дождитесь подтверждения Cloudflare и нажмите отправить еще раз.');
+      return;
+    }
 
     const form = event.currentTarget;
     const fd = new FormData(form);
@@ -24,13 +48,14 @@ export function PublicReviewForm({ turnstileSiteKey }: { turnstileSiteKey?: stri
         rating: fd.get('rating'),
         text: fd.get('text'),
         companySite: fd.get('companySite'),
-        turnstileToken: fd.get('cf-turnstile-response'),
+        turnstileToken,
       }),
     });
 
     const data = (await res.json().catch(() => ({}))) as { error?: string };
     if (res.ok) {
       form.reset();
+      setTurnstileToken('');
       setState('sent');
       setMessage('Спасибо. Отзыв отправлен на проверку и появится после модерации.');
       return;
@@ -57,16 +82,21 @@ export function PublicReviewForm({ turnstileSiteKey }: { turnstileSiteKey?: stri
       <textarea maxLength={1200} minLength={10} name="text" placeholder="Напишите отзыв" required rows={5} />
       <input
         aria-hidden="true"
+        autoComplete="off"
         className="hidden"
         name="companySite"
         tabIndex={-1}
         type="text"
-        autoComplete="off"
       />
       {turnstileSiteKey ? (
         <>
           <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js" strategy="afterInteractive" />
-          <div className="cf-turnstile" data-sitekey={turnstileSiteKey} />
+          <div
+            className="cf-turnstile"
+            data-callback="onReviewTurnstileSuccess"
+            data-expired-callback="onReviewTurnstileExpired"
+            data-sitekey={turnstileSiteKey}
+          />
         </>
       ) : null}
       <button className="btn btn-primary" disabled={state === 'sending'} type="submit">
