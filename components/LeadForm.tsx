@@ -80,7 +80,7 @@ export function LeadForm(_: LeadFormProps) {
         type="tel"
         value={phone}
       />
-      <input name="email" placeholder="Email" />
+      <input name="email" placeholder="Email (необязательно)" />
       <textarea name="message" placeholder="Что нужно сделать?" rows={4} />
       {calculatorSummary && (
         <div className="rounded-2xl border border-power/30 bg-power/10 p-4 text-sm text-zinc-200">

@@ -17,30 +17,14 @@ const statusMeta: Record<LeadStatus, { label: string; dot: string }> = {
   DONE: { label: 'выполнена', dot: 'bg-green-500' },
 };
 
-const statusOptions = Object.entries(statusMeta) as Array<[LeadStatus, { label: string; dot: string }]>;
-
-function parseStatus(value?: string): LeadStatus | undefined {
-  return value && value in statusMeta ? (value as LeadStatus) : undefined;
-}
-
-async function setStatus(formData: FormData) {
+async function setLeadStatus(formData: FormData) {
   'use server';
 
   const id = String(formData.get('id'));
-  const status = parseStatus(String(formData.get('status'))) || LeadStatus.NEW;
+  const status = String(formData.get('status')) === LeadStatus.DONE ? LeadStatus.DONE : LeadStatus.IN_PROGRESS;
   const lead = await prisma.lead.update({ where: { id }, data: { status } });
 
   await writeAuditLog('update', 'lead', `Заявка ${lead.name} переведена в статус "${statusMeta[status].label}"`, id);
-  revalidatePath('/admin/leads');
-}
-
-async function markDone(formData: FormData) {
-  'use server';
-
-  const id = String(formData.get('id'));
-  const lead = await prisma.lead.update({ where: { id }, data: { status: LeadStatus.DONE } });
-
-  await writeAuditLog('update', 'lead', `Заявка ${lead.name} отмечена как обработанная`, id);
   revalidatePath('/admin/leads');
 }
 
@@ -55,29 +39,21 @@ async function deleteLead(formData: FormData) {
   revalidatePath('/admin/leads');
 }
 
-export default async function Leads({
-  searchParams,
-}: {
-  searchParams?: { status?: string; q?: string };
-}) {
+export default async function Leads({ searchParams }: { searchParams?: { q?: string } }) {
   if (!(await getServerSession(authOptions))) redirect('/admin/login');
 
-  const selectedStatus = parseStatus(searchParams?.status);
   const q = String(searchParams?.q || '').trim();
-  const where: Prisma.LeadWhereInput = {
-    ...(selectedStatus ? { status: selectedStatus } : {}),
-    ...(q
-      ? {
-          OR: [
-            { name: { contains: q, mode: 'insensitive' } },
-            { phone: { contains: q } },
-            { email: { contains: q, mode: 'insensitive' } },
-            { message: { contains: q, mode: 'insensitive' } },
-            { service: { title: { contains: q, mode: 'insensitive' } } },
-          ],
-        }
-      : {}),
-  };
+  const where: Prisma.LeadWhereInput = q
+    ? {
+        OR: [
+          { name: { contains: q, mode: 'insensitive' } },
+          { phone: { contains: q } },
+          { email: { contains: q, mode: 'insensitive' } },
+          { message: { contains: q, mode: 'insensitive' } },
+          { service: { title: { contains: q, mode: 'insensitive' } } },
+        ],
+      }
+    : {};
 
   const [leads, total, newCount, progressCount, doneCount] = await Promise.all([
     prisma.lead.findMany({ where, include: { service: true }, orderBy: { createdAt: 'desc' } }),
@@ -95,16 +71,8 @@ export default async function Leads({
           <p className="font-bold text-power">Всего заявок: {total}</p>
           <h1 className="text-4xl font-black">Заявки</h1>
         </div>
-        <form className="grid gap-3 md:grid-cols-[240px_180px_140px]" action="/admin/leads">
+        <form className="grid gap-3 md:grid-cols-[260px_140px]" action="/admin/leads">
           <input name="q" placeholder="Поиск по заявкам" defaultValue={q} />
-          <select name="status" defaultValue={selectedStatus || ''}>
-            <option value="">Все статусы</option>
-            {statusOptions.map(([value, meta]) => (
-              <option key={value} value={value}>
-                {meta.label}
-              </option>
-            ))}
-          </select>
           <button className="btn btn-primary">Найти</button>
         </form>
       </div>
@@ -133,12 +101,9 @@ export default async function Leads({
           const serviceLabel = lead.service?.title || (hasCalculator ? 'Расчет из калькулятора' : 'Без услуги');
           const phoneDigits = getRussianPhoneDigits(lead.phone);
           const telHref = phoneDigits ? `tel:+${phoneDigits}` : `tel:${lead.phone}`;
-          const whatsappHref = phoneDigits
-            ? `https://wa.me/${phoneDigits}?text=${encodeURIComponent(`Здравствуйте, ${lead.name}! Вы оставляли заявку на сайте VolteForce.`)}`
-            : null;
 
           return (
-            <article className="card grid gap-4 p-5 md:grid-cols-[1.1fr_1fr_1fr_1fr_190px_150px] md:items-center" key={lead.id}>
+            <article className="card grid gap-4 p-5 md:grid-cols-[1.1fr_1fr_1fr_1fr_160px_140px] md:items-center" key={lead.id}>
               <div>
                 <div className="flex items-center gap-2">
                   <span className={`h-3 w-3 rounded-full ${meta.dot}`} aria-label={meta.label} />
@@ -148,40 +113,28 @@ export default async function Leads({
               </div>
               <div>
                 <span>{lead.phone}</span>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  <a className="btn btn-ghost px-3 py-2 text-sm" href={telHref}>
-                    Позвонить
-                  </a>
-                  {whatsappHref ? (
-                    <a className="btn btn-ghost px-3 py-2 text-sm" href={whatsappHref} rel="noreferrer" target="_blank">
-                      WhatsApp
-                    </a>
-                  ) : null}
-                </div>
+                <a className="btn btn-ghost mt-2 px-3 py-2 text-sm" href={telHref}>
+                  Позвонить
+                </a>
               </div>
               <span className={hasCalculator ? 'font-bold text-power' : ''}>{serviceLabel}</span>
               <span>{formatMoscowDateTime(lead.createdAt)}</span>
-              <form action={setStatus} className="grid gap-2">
-                <input type="hidden" name="id" value={lead.id} />
-                <select name="status" defaultValue={lead.status}>
-                  {statusOptions.map(([value, optionMeta]) => (
-                    <option key={value} value={value}>
-                      {optionMeta.label}
-                    </option>
-                  ))}
-                </select>
-                <button className="btn btn-primary">Сохранить</button>
-              </form>
               <div className="grid gap-2">
-                <form action={markDone}>
+                <form action={setLeadStatus}>
                   <input type="hidden" name="id" value={lead.id} />
-                  <button className="btn btn-primary w-full">Обработано</button>
+                  <input type="hidden" name="status" value={LeadStatus.IN_PROGRESS} />
+                  <button className="btn w-full bg-yellow-400 text-black">В работе</button>
                 </form>
-                <form action={deleteLead}>
+                <form action={setLeadStatus}>
                   <input type="hidden" name="id" value={lead.id} />
-                  <ConfirmSubmitButton message="Удалить эту заявку?">Удалить</ConfirmSubmitButton>
+                  <input type="hidden" name="status" value={LeadStatus.DONE} />
+                  <button className="btn w-full bg-green-500 text-black">Выполнено</button>
                 </form>
               </div>
+              <form action={deleteLead}>
+                <input type="hidden" name="id" value={lead.id} />
+                <ConfirmSubmitButton message="Удалить эту заявку?">Удалить</ConfirmSubmitButton>
+              </form>
               {(parsedMessage.plainMessage || hasCalculator) && (
                 <div className="grid gap-4 md:col-span-6">
                   {parsedMessage.plainMessage && (
