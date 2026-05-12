@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/prisma';
+import { hasProfanity } from '@/lib/profanity';
 import { publicReviewSchema } from '@/lib/validation';
 
 const REVIEW_COOLDOWN_MINUTES = 30;
@@ -53,6 +54,13 @@ export async function POST(req: Request) {
   const { clientName, rating, text, website, companySite, turnstileToken } = parsed.data;
   if (website || companySite) {
     return NextResponse.json({ ok: true });
+  }
+
+  if (hasProfanity(`${clientName} ${text}`)) {
+    return NextResponse.json(
+      { error: 'Отзыв содержит недопустимые слова. Исправьте текст и отправьте снова.' },
+      { status: 400 },
+    );
   }
 
   const ip = getClientIp();
