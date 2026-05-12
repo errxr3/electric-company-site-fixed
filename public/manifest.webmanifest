@@ -1,0 +1,18 @@
+{
+  "name": "VolteForce Admin",
+  "short_name": "VolteForce",
+  "description": "Админка VolteForce для заявок и уведомлений",
+  "start_url": "/admin/leads",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#111111",
+  "theme_color": "#ffd21e",
+  "icons": [
+    {
+      "src": "/logo.webp",
+      "sizes": "512x512",
+      "type": "image/webp",
+      "purpose": "any maskable"
+    }
+  ]
+}

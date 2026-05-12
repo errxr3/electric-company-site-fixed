@@ -25,6 +25,11 @@ export const metadata: Metadata = {
   alternates: {
     canonical: '/',
   },
+  manifest: '/manifest.webmanifest',
+  icons: {
+    icon: '/logo.webp',
+    apple: '/logo.webp',
+  },
   openGraph: {
     type: 'website',
     locale: 'ru_RU',

@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth';
 import { writeAuditLog } from '@/lib/audit';
 import { normalizeRussianPhone } from '@/lib/phone';
 import { prisma } from '@/lib/prisma';
+import { sendNewLeadPush } from '@/lib/push';
 import { leadSchema } from '@/lib/validation';
 
 export async function GET() {
@@ -32,5 +33,6 @@ export async function POST(req: Request) {
   });
 
   await writeAuditLog('create', 'lead', `Поступила новая заявка от ${lead.name}`, lead.id);
+  await sendNewLeadPush({ id: lead.id, name: lead.name, phone: lead.phone });
   return NextResponse.json(lead, { status: 201 });
 }
