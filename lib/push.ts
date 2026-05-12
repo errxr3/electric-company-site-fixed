@@ -7,6 +7,18 @@ type LeadPushPayload = {
   phone: string;
 };
 
+type ReviewPushPayload = {
+  id: string;
+  clientName: string;
+  rating: number;
+};
+
+type PushPayload = {
+  title: string;
+  body: string;
+  url: string;
+};
+
 function getVapidConfig() {
   const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
   const privateKey = process.env.VAPID_PRIVATE_KEY;
@@ -24,18 +36,12 @@ function configureWebPush() {
   return true;
 }
 
-export async function sendNewLeadPush(lead: LeadPushPayload) {
+async function sendPushToAdmins(payload: PushPayload) {
   try {
     if (!configureWebPush()) return;
 
     const subscriptions = await prisma.pushSubscription.findMany();
     if (subscriptions.length === 0) return;
-
-    const payload = JSON.stringify({
-      title: 'Новая заявка VolteForce',
-      body: `${lead.name}, ${lead.phone}`,
-      url: '/admin/leads',
-    });
 
     await Promise.all(
       subscriptions.map(async (subscription) => {
@@ -48,7 +54,7 @@ export async function sendNewLeadPush(lead: LeadPushPayload) {
         };
 
         try {
-          await webPush.sendNotification(pushSubscription, payload);
+          await webPush.sendNotification(pushSubscription, JSON.stringify(payload));
         } catch (error) {
           const statusCode = typeof error === 'object' && error && 'statusCode' in error ? Number(error.statusCode) : 0;
           if (statusCode === 404 || statusCode === 410) {
@@ -58,6 +64,22 @@ export async function sendNewLeadPush(lead: LeadPushPayload) {
       }),
     );
   } catch {
-    // Push must never block lead creation.
+    // Push must never block creating leads or reviews.
   }
+}
+
+export async function sendNewLeadPush(lead: LeadPushPayload) {
+  await sendPushToAdmins({
+    title: 'Новая заявка VolteForce',
+    body: `${lead.name}, ${lead.phone}`,
+    url: '/admin/leads',
+  });
+}
+
+export async function sendNewReviewPush(review: ReviewPushPayload) {
+  await sendPushToAdmins({
+    title: 'Новый отзыв на проверке',
+    body: `${review.clientName}, ${review.rating} из 5`,
+    url: '/admin/reviews?status=PENDING',
+  });
 }

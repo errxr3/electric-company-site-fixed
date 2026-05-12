@@ -4,6 +4,7 @@ import { headers } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import { hasProfanity } from '@/lib/profanity';
+import { sendNewReviewPush } from '@/lib/push';
 import { publicReviewSchema } from '@/lib/validation';
 
 const REVIEW_COOLDOWN_MINUTES = 30;
@@ -86,7 +87,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Подтвердите, что вы не робот.' }, { status: 400 });
   }
 
-  await prisma.review.create({
+  const review = await prisma.review.create({
     data: {
       clientName,
       rating,
@@ -98,6 +99,7 @@ export async function POST(req: Request) {
     },
   });
 
+  await sendNewReviewPush({ id: review.id, clientName: review.clientName, rating: review.rating });
   revalidatePath('/admin/reviews');
   return NextResponse.json({ ok: true });
 }
