@@ -41,11 +41,17 @@ export async function POST(req: Request) {
   const parsed = publicReviewSchema.safeParse(raw);
 
   if (!parsed.success) {
-    return NextResponse.json({ error: 'Проверьте имя, оценку и текст отзыва.' }, { status: 400 });
+    const fields = parsed.error.flatten().fieldErrors;
+    const error =
+      fields.clientName?.[0] ||
+      fields.rating?.[0] ||
+      fields.text?.[0] ||
+      'Проверьте имя, оценку и текст отзыва.';
+    return NextResponse.json({ error }, { status: 400 });
   }
 
-  const { clientName, rating, text, website, turnstileToken } = parsed.data;
-  if (website) {
+  const { clientName, rating, text, website, companySite, turnstileToken } = parsed.data;
+  if (website || companySite) {
     return NextResponse.json({ ok: true });
   }
 

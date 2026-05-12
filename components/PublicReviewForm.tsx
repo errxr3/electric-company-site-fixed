@@ -23,7 +23,7 @@ export function PublicReviewForm({ turnstileSiteKey }: { turnstileSiteKey?: stri
         clientName: fd.get('clientName'),
         rating: fd.get('rating'),
         text: fd.get('text'),
-        website: fd.get('website'),
+        companySite: fd.get('companySite'),
         turnstileToken: fd.get('cf-turnstile-response'),
       }),
     });
@@ -54,11 +54,11 @@ export function PublicReviewForm({ turnstileSiteKey }: { turnstileSiteKey?: stri
         <option value="2">2 звезды</option>
         <option value="1">1 звезда</option>
       </select>
-      <textarea maxLength={1200} minLength={20} name="text" placeholder="Напишите отзыв" required rows={5} />
+      <textarea maxLength={1200} minLength={10} name="text" placeholder="Напишите отзыв" required rows={5} />
       <input
         aria-hidden="true"
         className="hidden"
-        name="website"
+        name="companySite"
         tabIndex={-1}
         type="text"
         autoComplete="off"
