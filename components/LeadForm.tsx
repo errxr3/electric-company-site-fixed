@@ -1,5 +1,6 @@
 'use client';
 
+import Script from 'next/script';
 import { useEffect, useState } from 'react';
 import { formatRussianPhoneInput, normalizeRussianPhone } from '@/lib/phone';
 
@@ -7,13 +8,22 @@ type LeadFormProps = {
   services?: { id: string; title: string }[];
 };
 
+declare global {
+  interface Window {
+    onLeadTurnstileSuccess?: (token: string) => void;
+    onLeadTurnstileExpired?: () => void;
+  }
+}
+
 const CALCULATOR_STORAGE_KEY = 'voltforce-calculator-summary';
+const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '';
 
 export function LeadForm(_: LeadFormProps) {
   const [ok, setOk] = useState(false);
   const [err, setErr] = useState('');
   const [phone, setPhone] = useState('');
   const [calculatorSummary, setCalculatorSummary] = useState('');
+  const [turnstileToken, setTurnstileToken] = useState('');
 
   useEffect(() => {
     function syncCalculatorSummary(event?: Event) {
@@ -24,6 +34,16 @@ export function LeadForm(_: LeadFormProps) {
     syncCalculatorSummary();
     window.addEventListener('voltforce-calculator-updated', syncCalculatorSummary);
     return () => window.removeEventListener('voltforce-calculator-updated', syncCalculatorSummary);
+  }, []);
+
+  useEffect(() => {
+    window.onLeadTurnstileSuccess = (token: string) => setTurnstileToken(token);
+    window.onLeadTurnstileExpired = () => setTurnstileToken('');
+
+    return () => {
+      delete window.onLeadTurnstileSuccess;
+      delete window.onLeadTurnstileExpired;
+    };
   }, []);
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
@@ -37,6 +57,11 @@ export function LeadForm(_: LeadFormProps) {
       return;
     }
 
+    if (turnstileSiteKey && !turnstileToken) {
+      setErr('Дождитесь подтверждения Cloudflare и отправьте заявку еще раз.');
+      return;
+    }
+
     const form = event.currentTarget;
     const data = Object.fromEntries(new FormData(form));
     const message = String(data.message || '').trim();
@@ -44,6 +69,9 @@ export function LeadForm(_: LeadFormProps) {
     const payload = {
       ...data,
       phone: normalizedPhone,
+      sourcePath: `${window.location.pathname}${window.location.search}`,
+      sourceTitle: document.title,
+      turnstileToken,
       message: [message, calculator].filter(Boolean).join('\n\n'),
     };
 
@@ -57,11 +85,18 @@ export function LeadForm(_: LeadFormProps) {
     if (res.ok) {
       setOk(true);
       setPhone('');
+      setTurnstileToken('');
       form.reset();
       window.localStorage.removeItem(CALCULATOR_STORAGE_KEY);
       setCalculatorSummary('');
+    } else if (response.error === 'Invalid phone') {
+      setErr('Укажите российский номер в формате +7 (999) 123-45-67.');
+    } else if (response.error === 'Rate limited') {
+      setErr('Заявка уже отправлена. Попробуйте повторить позже.');
+    } else if (response.error === 'Captcha required') {
+      setErr('Подтвердите, что вы не робот.');
     } else {
-      setErr(response.error === 'Invalid phone' ? 'Укажите российский номер в формате +7 (999) 123-45-67.' : 'Проверьте поля формы.');
+      setErr('Проверьте поля формы.');
     }
   }
 
@@ -82,6 +117,18 @@ export function LeadForm(_: LeadFormProps) {
       />
       <input name="email" placeholder="Email (необязательно)" />
       <textarea name="message" placeholder="Что нужно сделать?" rows={4} />
+      <input aria-hidden="true" autoComplete="off" className="hidden" name="companySite" tabIndex={-1} type="text" />
+      {turnstileSiteKey ? (
+        <>
+          <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js" strategy="afterInteractive" />
+          <div
+            className="cf-turnstile"
+            data-callback="onLeadTurnstileSuccess"
+            data-expired-callback="onLeadTurnstileExpired"
+            data-sitekey={turnstileSiteKey}
+          />
+        </>
+      ) : null}
       {calculatorSummary && (
         <div className="rounded-2xl border border-power/30 bg-power/10 p-4 text-sm text-zinc-200">
           <b className="text-power">В заявку добавится расчет из калькулятора:</b>

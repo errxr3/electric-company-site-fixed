@@ -1,42 +1,13 @@
-import { createHash } from 'crypto';
 import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import { hasProfanity } from '@/lib/profanity';
 import { sendNewReviewPush } from '@/lib/push';
+import { getClientIp, hashIp, verifyTurnstile } from '@/lib/requestSecurity';
 import { publicReviewSchema } from '@/lib/validation';
 
 const REVIEW_COOLDOWN_MINUTES = 30;
-
-function getClientIp() {
-  const h = headers();
-  const forwarded = h.get('x-forwarded-for')?.split(',')[0]?.trim();
-  return forwarded || h.get('x-real-ip') || 'unknown';
-}
-
-function hashIp(ip: string) {
-  const salt = process.env.REVIEW_IP_SALT || process.env.NEXTAUTH_SECRET || 'volteforce-review-salt';
-  return createHash('sha256').update(`${salt}:${ip}`).digest('hex');
-}
-
-async function verifyTurnstile(token: string | undefined, ip: string) {
-  const secret = process.env.CLOUDFLARE_TURNSTILE_SECRET_KEY;
-  if (!secret) return true;
-  if (!token) return false;
-
-  const body = new URLSearchParams();
-  body.set('secret', secret);
-  body.set('response', token);
-  if (ip !== 'unknown') body.set('remoteip', ip);
-
-  const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
-    method: 'POST',
-    body,
-  });
-  const data = (await res.json()) as { success?: boolean };
-  return Boolean(data.success);
-}
 
 export async function POST(req: Request) {
   const raw = await req.json().catch(() => null);
@@ -65,7 +36,7 @@ export async function POST(req: Request) {
   }
 
   const ip = getClientIp();
-  const ipHash = hashIp(ip);
+  const ipHash = hashIp(ip, 'review');
   const userAgent = headers().get('user-agent')?.slice(0, 300) || null;
   const since = new Date(Date.now() - REVIEW_COOLDOWN_MINUTES * 60 * 1000);
   const recent = await prisma.review.count({

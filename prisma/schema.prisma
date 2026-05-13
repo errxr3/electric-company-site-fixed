@@ -45,6 +45,10 @@ model Lead {
   phone     String
   email     String?
   message   String?
+  sourcePath String?
+  sourceTitle String?
+  ipHash    String?
+  userAgent String?
   status    LeadStatus @default(NEW)
   createdAt DateTime   @default(now())
   serviceId String?

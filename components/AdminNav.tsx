@@ -6,6 +6,9 @@ export function AdminNav() {
   return (
     <div className="mb-8 grid gap-4">
       <nav className="flex flex-wrap items-center gap-3">
+        <Link className="btn btn-ghost" href="/admin">
+          Сводка
+        </Link>
         <Link className="btn btn-ghost" href="/admin/leads">
           Заявки
         </Link>

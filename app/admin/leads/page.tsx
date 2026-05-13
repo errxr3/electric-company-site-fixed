@@ -1,5 +1,6 @@
 import { revalidatePath } from 'next/cache';
 import { getServerSession } from 'next-auth';
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { LeadStatus, Prisma } from '@prisma/client';
 import { AdminNav } from '@/components/AdminNav';
@@ -26,6 +27,7 @@ async function setLeadStatus(formData: FormData) {
 
   await writeAuditLog('update', 'lead', `Заявка ${lead.name} переведена в статус "${statusMeta[status].label}"`, id);
   revalidatePath('/admin/leads');
+  revalidatePath('/admin');
 }
 
 async function deleteLead(formData: FormData) {
@@ -37,6 +39,7 @@ async function deleteLead(formData: FormData) {
 
   await writeAuditLog('delete', 'lead', `Удалена заявка ${lead?.name || ''} ${lead?.phone || ''}`.trim(), id);
   revalidatePath('/admin/leads');
+  revalidatePath('/admin');
 }
 
 export default async function Leads({ searchParams }: { searchParams?: { q?: string } }) {
@@ -50,6 +53,8 @@ export default async function Leads({ searchParams }: { searchParams?: { q?: str
           { phone: { contains: q } },
           { email: { contains: q, mode: 'insensitive' } },
           { message: { contains: q, mode: 'insensitive' } },
+          { sourcePath: { contains: q, mode: 'insensitive' } },
+          { sourceTitle: { contains: q, mode: 'insensitive' } },
           { service: { title: { contains: q, mode: 'insensitive' } } },
         ],
       }
@@ -135,8 +140,19 @@ export default async function Leads({ searchParams }: { searchParams?: { q?: str
                 <input type="hidden" name="id" value={lead.id} />
                 <ConfirmSubmitButton message="Удалить эту заявку?">Удалить</ConfirmSubmitButton>
               </form>
-              {(parsedMessage.plainMessage || hasCalculator) && (
+              {(lead.sourcePath || lead.sourceTitle || parsedMessage.plainMessage || hasCalculator) && (
                 <div className="grid gap-4 md:col-span-6">
+                  {(lead.sourcePath || lead.sourceTitle) && (
+                    <div className="rounded-2xl bg-zinc-900/70 p-4 text-sm text-zinc-300">
+                      <b className="text-white">Источник заявки</b>
+                      <p className="mt-2">{lead.sourceTitle || 'Страница сайта'}</p>
+                      {lead.sourcePath ? (
+                        <Link className="text-power hover:underline" href={lead.sourcePath}>
+                          {lead.sourcePath}
+                        </Link>
+                      ) : null}
+                    </div>
+                  )}
                   {parsedMessage.plainMessage && (
                     <div className="rounded-2xl bg-zinc-900/70 p-4 text-zinc-300">
                       <b className="text-white">Комментарий клиента</b>

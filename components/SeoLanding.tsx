@@ -5,8 +5,36 @@ import type { SeoLandingPage } from '@/lib/seoLandingPages';
 import { seoLandingLinks } from '@/lib/seoLandingPages';
 
 export function SeoLanding({ page }: { page: SeoLandingPage }) {
+  const faq = [
+    {
+      question: `Сколько стоит ${page.h1.toLowerCase()}?`,
+      answer: page.priceNote,
+    },
+    {
+      question: 'Можно ли заранее понять стоимость работ?',
+      answer: 'Да. Опишите задачу в заявке или используйте калькулятор на сайте, а перед началом работ мы согласуем объем и цену.',
+    },
+    {
+      question: 'Вы выезжаете по Тверской области?',
+      answer: 'Да. Работаем по Твери и Тверской области, условия выезда зависят от адреса и объема работ.',
+    },
+  ];
+  const faqJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faq.map((item) => ({
+      '@type': 'Question',
+      name: item.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: item.answer,
+      },
+    })),
+  };
+
   return (
     <main>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
       <section className="container grid gap-8 py-14 lg:grid-cols-[1fr_0.9fr] lg:items-center">
         <div>
           <p className="font-bold text-power">Тверь и Тверская область</p>
@@ -56,6 +84,20 @@ export function SeoLanding({ page }: { page: SeoLandingPage }) {
               <Link className="btn btn-ghost" href={link.href} key={link.href}>
                 {link.title}
               </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="container py-10">
+        <div className="card p-6">
+          <h2 className="text-3xl font-black">Вопросы и ответы</h2>
+          <div className="mt-5 grid gap-4">
+            {faq.map((item) => (
+              <div className="rounded-2xl border border-white/10 p-4" key={item.question}>
+                <h3 className="font-black text-white">{item.question}</h3>
+                <p className="mt-2 text-zinc-400">{item.answer}</p>
+              </div>
             ))}
           </div>
         </div>

@@ -5,7 +5,10 @@ import { writeAuditLog } from '@/lib/audit';
 import { normalizeRussianPhone } from '@/lib/phone';
 import { prisma } from '@/lib/prisma';
 import { sendNewLeadPush } from '@/lib/push';
+import { getClientIp, hashIp, verifyTurnstile } from '@/lib/requestSecurity';
 import { leadSchema } from '@/lib/validation';
+
+const LEAD_COOLDOWN_MINUTES = 10;
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -19,8 +22,24 @@ export async function POST(req: Request) {
   if (!parsed.success) return NextResponse.json({ error: 'Validation error' }, { status: 400 });
 
   const data = parsed.data;
+  if (data.companySite) return NextResponse.json({ ok: true }, { status: 201 });
+
   const phone = normalizeRussianPhone(data.phone);
   if (!phone) return NextResponse.json({ error: 'Invalid phone' }, { status: 400 });
+
+  const ip = getClientIp();
+  const ipHash = hashIp(ip, 'lead');
+  const recent = await prisma.lead.count({
+    where: {
+      ipHash,
+      createdAt: { gte: new Date(Date.now() - LEAD_COOLDOWN_MINUTES * 60 * 1000) },
+    },
+  });
+
+  if (recent > 0) return NextResponse.json({ error: 'Rate limited' }, { status: 429 });
+
+  const captchaOk = await verifyTurnstile(data.turnstileToken, ip);
+  if (!captchaOk) return NextResponse.json({ error: 'Captcha required' }, { status: 400 });
 
   const lead = await prisma.lead.create({
     data: {
@@ -28,6 +47,10 @@ export async function POST(req: Request) {
       phone,
       email: data.email || null,
       message: data.message || null,
+      sourcePath: data.sourcePath || null,
+      sourceTitle: data.sourceTitle || null,
+      ipHash,
+      userAgent: req.headers.get('user-agent')?.slice(0, 300) || null,
       serviceId: data.serviceId || null,
     },
   });
