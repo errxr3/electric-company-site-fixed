@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { seoLandingLinks } from '@/lib/seoLandingPages';
 import { getSiteSettings, phoneHref } from '@/lib/settings';
 
 const avitoLinks = [
@@ -18,7 +19,7 @@ export async function Footer() {
 
   return (
     <footer className="mt-20 border-t border-white/10 py-10">
-      <div className="container grid gap-8 md:grid-cols-3">
+      <div className="container grid gap-8 md:grid-cols-4">
         <div className="grid gap-4">
           <div className="flex items-center gap-3">
             <Image src="/logo.webp" alt="Логотип" width={56} height={56} />
@@ -29,8 +30,7 @@ export async function Footer() {
           <p className="font-bold text-power">Тверь и Тверская область</p>
         </div>
         <p className="text-zinc-400">
-          Профессиональный электромонтаж, диагностика и обслуживание. Работаем безопасно, чисто,
-          по договору и с понятной сметой.
+          Профессиональный электромонтаж, диагностика и обслуживание. Работаем безопасно, чисто, по договору и с понятной сметой.
         </p>
         <div className="grid gap-2 text-zinc-300">
           <Link href={phoneHref(settings.phonePrimary)}>{settings.phonePrimary}</Link>
@@ -44,6 +44,14 @@ export async function Footer() {
           <Link href="/admin/login" className="text-zinc-500">
             Админ-панель
           </Link>
+        </div>
+        <div className="grid gap-2 text-zinc-300">
+          <b className="text-white">Услуги в Твери</b>
+          {seoLandingLinks.map((link) => (
+            <Link href={link.href} key={link.href}>
+              {link.title}
+            </Link>
+          ))}
         </div>
       </div>
     </footer>
