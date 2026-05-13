@@ -44,6 +44,7 @@ async function add(fd: FormData) {
       clientName: String(fd.get('clientName')),
       rating: Number(fd.get('rating')),
       text: String(fd.get('text')),
+      companyReply: String(fd.get('companyReply') || '').trim() || null,
       status,
       isPublished: publishedByStatus(status),
     },
@@ -66,6 +67,7 @@ async function update(fd: FormData) {
       clientName: String(fd.get('clientName')),
       rating: Number(fd.get('rating')),
       text: String(fd.get('text')),
+      companyReply: String(fd.get('companyReply') || '').trim() || null,
       status,
       isPublished: publishedByStatus(status),
     },
@@ -153,6 +155,7 @@ export default async function ReviewsAdmin({
         <input name="clientName" placeholder="Клиент" required />
         <input name="rating" type="number" min="1" max="5" placeholder="Рейтинг" required />
         <textarea name="text" placeholder="Текст" required rows={4} />
+        <textarea name="companyReply" placeholder="Ответ компании (необязательно)" rows={3} />
         <select name="status" defaultValue="PUBLISHED">
           {statusValues.map((status) => (
             <option value={status} key={status}>
@@ -190,6 +193,7 @@ export default async function ReviewsAdmin({
                   </select>
                 </div>
                 <textarea name="text" defaultValue={item.text} placeholder="Текст" required rows={4} />
+                <textarea name="companyReply" defaultValue={item.companyReply || ''} placeholder="Ответ компании (необязательно)" rows={3} />
                 <div className="grid gap-3 md:grid-cols-[1fr_180px]">
                   <button className="btn btn-primary">Сохранить</button>
                   <span className="text-sm text-zinc-500">

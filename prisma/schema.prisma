@@ -60,6 +60,7 @@ model Review {
   clientName  String
   rating      Int
   text        String
+  companyReply String?
   isPublished Boolean  @default(true)
   status      ReviewStatus @default(PUBLISHED)
   ipHash      String?

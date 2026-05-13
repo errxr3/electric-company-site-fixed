@@ -54,6 +54,12 @@ export default async function Reviews() {
                 <div className="text-power">{'★'.repeat(review.rating)}</div>
                 <h2 className="mt-2 text-xl font-black">{review.clientName}</h2>
                 <p className="mt-3 text-zinc-400">{review.text}</p>
+                {review.companyReply ? (
+                  <div className="mt-5 rounded-2xl border border-power/30 bg-power/10 p-4">
+                    <b className="text-power">Ответ компании</b>
+                    <p className="mt-2 text-zinc-300">{review.companyReply}</p>
+                  </div>
+                ) : null}
               </article>
             ))
           ) : (

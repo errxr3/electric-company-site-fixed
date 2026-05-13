@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { hasProfanity } from '@/lib/profanity';
 import { sendNewReviewPush } from '@/lib/push';
 import { getClientIp, hashIp, verifyTurnstile } from '@/lib/requestSecurity';
+import { checkReviewSpam } from '@/lib/reviewSpam';
 import { publicReviewSchema } from '@/lib/validation';
 
 const REVIEW_COOLDOWN_MINUTES = 30;
@@ -35,6 +36,11 @@ export async function POST(req: Request) {
     );
   }
 
+  const spamCheck = checkReviewSpam(clientName, text);
+  if (spamCheck.suspicious) {
+    return NextResponse.json({ error: spamCheck.reason || 'Отзыв похож на спам. Исправьте текст и отправьте снова.' }, { status: 400 });
+  }
+
   const ip = getClientIp();
   const ipHash = hashIp(ip, 'review');
   const userAgent = headers().get('user-agent')?.slice(0, 300) || null;
@@ -51,6 +57,18 @@ export async function POST(req: Request) {
       { error: `Отзыв уже отправлен. Повторить можно через ${REVIEW_COOLDOWN_MINUTES} минут.` },
       { status: 429 },
     );
+  }
+
+  const duplicateSince = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  const duplicate = await prisma.review.count({
+    where: {
+      text,
+      createdAt: { gte: duplicateSince },
+    },
+  });
+
+  if (duplicate > 0) {
+    return NextResponse.json({ error: 'Такой отзыв уже отправляли. Напишите другой текст.' }, { status: 409 });
   }
 
   const captchaOk = await verifyTurnstile(turnstileToken, ip);

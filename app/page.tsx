@@ -160,6 +160,12 @@ export default async function Home() {
                 <div className="text-power">{'★'.repeat(review.rating)}</div>
                 <b>{review.clientName}</b>
                 <p className="mt-3 text-zinc-400">{review.text}</p>
+                {review.companyReply ? (
+                  <div className="mt-4 rounded-2xl border border-power/30 bg-power/10 p-4 text-sm">
+                    <b className="text-power">Ответ компании</b>
+                    <p className="mt-2 text-zinc-300">{review.companyReply}</p>
+                  </div>
+                ) : null}
               </div>
             ))}
           </div>

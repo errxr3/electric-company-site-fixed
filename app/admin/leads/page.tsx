@@ -18,6 +18,12 @@ const statusMeta: Record<LeadStatus, { label: string; dot: string }> = {
   DONE: { label: 'выполнена', dot: 'bg-green-500' },
 };
 
+const leadStatuses = Object.values(LeadStatus);
+
+function parseLeadStatus(status?: string) {
+  return leadStatuses.includes(status as LeadStatus) ? (status as LeadStatus) : undefined;
+}
+
 async function setLeadStatus(formData: FormData) {
   'use server';
 
@@ -42,11 +48,12 @@ async function deleteLead(formData: FormData) {
   revalidatePath('/admin');
 }
 
-export default async function Leads({ searchParams }: { searchParams?: { q?: string } }) {
+export default async function Leads({ searchParams }: { searchParams?: { q?: string; status?: string } }) {
   if (!(await getServerSession(authOptions))) redirect('/admin/login');
 
   const q = String(searchParams?.q || '').trim();
-  const where: Prisma.LeadWhereInput = q
+  const selectedStatus = parseLeadStatus(searchParams?.status);
+  const searchWhere: Prisma.LeadWhereInput | undefined = q
     ? {
         OR: [
           { name: { contains: q, mode: 'insensitive' } },
@@ -58,7 +65,11 @@ export default async function Leads({ searchParams }: { searchParams?: { q?: str
           { service: { title: { contains: q, mode: 'insensitive' } } },
         ],
       }
-    : {};
+    : undefined;
+  const where: Prisma.LeadWhereInput = {
+    ...(selectedStatus ? { status: selectedStatus } : {}),
+    ...(searchWhere || {}),
+  };
 
   const [leads, total, newCount, progressCount, doneCount] = await Promise.all([
     prisma.lead.findMany({ where, include: { service: true }, orderBy: { createdAt: 'desc' } }),
@@ -78,6 +89,7 @@ export default async function Leads({ searchParams }: { searchParams?: { q?: str
         </div>
         <form className="grid gap-3 md:grid-cols-[260px_140px]" action="/admin/leads">
           <input name="q" placeholder="Поиск по заявкам" defaultValue={q} />
+          {selectedStatus ? <input type="hidden" name="status" value={selectedStatus} /> : null}
           <button className="btn btn-primary">Найти</button>
         </form>
       </div>
@@ -95,6 +107,20 @@ export default async function Leads({ searchParams }: { searchParams?: { q?: str
           <span className="text-sm text-zinc-500">Выполнены</span>
           <b className="block text-3xl text-green-400">{doneCount}</b>
         </div>
+      </div>
+
+      <div className="mb-6 flex flex-wrap gap-3">
+        <Link className={`btn ${!selectedStatus ? 'btn-primary' : 'btn-ghost'}`} href={q ? `/admin/leads?q=${encodeURIComponent(q)}` : '/admin/leads'}>
+          Все
+        </Link>
+        {leadStatuses.map((status) => {
+          const href = `/admin/leads?status=${status}${q ? `&q=${encodeURIComponent(q)}` : ''}`;
+          return (
+            <Link className={`btn ${selectedStatus === status ? 'btn-primary' : 'btn-ghost'}`} href={href} key={status}>
+              {statusMeta[status].label}
+            </Link>
+          );
+        })}
       </div>
 
       <div className="grid gap-4">
