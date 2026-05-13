@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useCallback, useState } from 'react';
 import { TurnstileWidget } from '@/components/TurnstileWidget';
 import { reachGoal } from '@/lib/yandexMetrika';
@@ -28,6 +29,12 @@ export function PublicReviewForm({ turnstileSiteKey }: { turnstileSiteKey?: stri
 
     const form = event.currentTarget;
     const fd = new FormData(form);
+    if (fd.get('personalDataConsent') !== 'on') {
+      setState('error');
+      setMessage('Без согласия на обработку персональных данных отзыв отправить нельзя.');
+      return;
+    }
+
     const res = await fetch('/api/public-reviews', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -37,6 +44,7 @@ export function PublicReviewForm({ turnstileSiteKey }: { turnstileSiteKey?: stri
         text: fd.get('text'),
         companySite: fd.get('companySite'),
         turnstileToken,
+        personalDataConsent: fd.get('personalDataConsent'),
       }),
     });
 
@@ -70,6 +78,15 @@ export function PublicReviewForm({ turnstileSiteKey }: { turnstileSiteKey?: stri
         <option value="1">1 звезда</option>
       </select>
       <textarea maxLength={1200} minLength={10} name="text" placeholder="Напишите отзыв" required rows={5} />
+      <label className="flex items-start gap-3 rounded-2xl border border-white/10 bg-black/20 p-3 text-sm text-zinc-300">
+        <input className="mt-1 h-5 w-5 shrink-0 accent-power" defaultChecked name="personalDataConsent" required type="checkbox" />
+        <span>
+          Согласен на обработку персональных данных для публикации и модерации отзыва. Можно снять галочку и не давать согласие, но тогда форма не отправится.{' '}
+          <Link className="font-bold text-power hover:text-white" href="/privacy" target="_blank">
+            Политика конфиденциальности
+          </Link>
+        </span>
+      </label>
       <input
         aria-hidden="true"
         autoComplete="off"

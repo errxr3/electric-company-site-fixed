@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { parseLeadMessage } from '@/lib/leadCalculator';
 import { formatRussianPhoneInput, normalizeRussianPhone } from '@/lib/phone';
@@ -54,6 +55,11 @@ export function LeadForm(_: LeadFormProps) {
 
     const form = event.currentTarget;
     const data = Object.fromEntries(new FormData(form));
+    if (data.personalDataConsent !== 'on') {
+      setErr('Без согласия на обработку персональных данных заявку отправить нельзя.');
+      return;
+    }
+
     const message = String(data.message || '').trim();
     const calculator = calculatorSummary.trim();
     const payload = {
@@ -109,6 +115,15 @@ export function LeadForm(_: LeadFormProps) {
       />
       <input name="email" placeholder="Email (необязательно)" />
       <textarea name="message" placeholder="Что нужно сделать?" rows={4} />
+      <label className="flex items-start gap-3 rounded-2xl border border-white/10 bg-black/20 p-3 text-sm text-zinc-300">
+        <input className="mt-1 h-5 w-5 shrink-0 accent-power" defaultChecked name="personalDataConsent" required type="checkbox" />
+        <span>
+          Согласен на обработку персональных данных для связи по заявке. Можно снять галочку и не давать согласие, но тогда форма не отправится.{' '}
+          <Link className="font-bold text-power hover:text-white" href="/privacy" target="_blank">
+            Политика конфиденциальности
+          </Link>
+        </span>
+      </label>
       <input aria-hidden="true" autoComplete="off" className="hidden" name="companySite" tabIndex={-1} type="text" />
       {turnstileSiteKey ? (
         <TurnstileWidget

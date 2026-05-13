@@ -4,7 +4,7 @@ import { seoLandingPages } from '@/lib/seoLandingPages';
 const siteUrl = 'https://volteforce.ru';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const routes = ['', '/services', '/portfolio', '/reviews', '/contacts', '/about', ...seoLandingPages.map((page) => page.href)];
+  const routes = ['', '/services', '/portfolio', '/reviews', '/contacts', '/about', '/privacy', ...seoLandingPages.map((page) => page.href)];
   const now = new Date();
 
   return routes.map((route) => ({

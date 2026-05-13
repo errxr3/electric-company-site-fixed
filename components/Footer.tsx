@@ -52,6 +52,7 @@ export async function Footer() {
           <Link className="w-fit hover:text-power" href="/portfolio">Портфолио</Link>
           <Link className="w-fit hover:text-power" href="/reviews">Отзывы</Link>
           <Link className="w-fit hover:text-power" href="/contacts">Контакты</Link>
+          <Link className="w-fit hover:text-power" href="/privacy">Политика конфиденциальности</Link>
         </div>
       </div>
       <div className="container mt-8 border-t border-white/10 pt-5">
