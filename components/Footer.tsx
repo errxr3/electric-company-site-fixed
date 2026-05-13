@@ -19,8 +19,8 @@ export async function Footer() {
 
   return (
     <footer className="mt-20 border-t border-white/10 py-10">
-      <div className="container grid gap-8 md:grid-cols-4">
-        <div className="grid gap-4">
+      <div className="container grid gap-8 lg:grid-cols-[1.15fr_0.95fr_1.35fr] lg:items-start">
+        <div className="grid gap-4 lg:max-w-sm">
           <div className="flex items-center gap-3">
             <Image src="/logo.webp" alt="Логотип" width={56} height={56} />
             <b className="text-xl">
@@ -28,30 +28,33 @@ export async function Footer() {
             </b>
           </div>
           <p className="font-bold text-power">Тверь и Тверская область</p>
+          <p className="text-zinc-400">
+            Профессиональный электромонтаж, диагностика и обслуживание. Работаем безопасно, чисто, по договору и с понятной сметой.
+          </p>
         </div>
-        <p className="text-zinc-400">
-          Профессиональный электромонтаж, диагностика и обслуживание. Работаем безопасно, чисто, по договору и с понятной сметой.
-        </p>
-        <div className="grid gap-2 text-zinc-300">
-          <Link href={phoneHref(settings.phonePrimary)}>{settings.phonePrimary}</Link>
-          <Link href={phoneHref(settings.phoneSecondary)}>{settings.phoneSecondary}</Link>
-          <Link href={`mailto:${settings.email}`}>{settings.email}</Link>
+        <div className="grid gap-3 text-zinc-300 lg:justify-self-center">
+          <b className="text-white">Контакты</b>
+          <Link className="w-fit hover:text-power" href={phoneHref(settings.phonePrimary)}>{settings.phonePrimary}</Link>
+          <Link className="w-fit hover:text-power" href={phoneHref(settings.phoneSecondary)}>{settings.phoneSecondary}</Link>
+          <Link className="w-fit break-all hover:text-power" href={`mailto:${settings.email}`}>{settings.email}</Link>
           {avitoLinks.map((link) => (
-            <a href={link.href} key={link.href} rel="noreferrer" target="_blank">
+            <a className="w-fit hover:text-power" href={link.href} key={link.href} rel="noreferrer" target="_blank">
               {link.title}
             </a>
           ))}
-          <Link href="/admin/login" className="text-zinc-500">
+          <Link href="/admin/login" className="w-fit text-zinc-500 hover:text-zinc-300">
             Админ-панель
           </Link>
         </div>
-        <div className="grid gap-2 text-zinc-300">
-          <b className="text-white">Услуги в Твери</b>
+        <div className="grid gap-3 text-zinc-300">
+          <b className="text-white">Услуги в Твери и области</b>
+          <div className="grid gap-x-6 gap-y-2 sm:grid-cols-2">
           {seoLandingLinks.map((link) => (
-            <Link href={link.href} key={link.href}>
+            <Link className="hover:text-power" href={link.href} key={link.href}>
               {link.title}
             </Link>
           ))}
+          </div>
         </div>
       </div>
     </footer>
