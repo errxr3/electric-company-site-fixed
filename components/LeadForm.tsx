@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { parseLeadMessage } from '@/lib/leadCalculator';
 import { formatRussianPhoneInput, normalizeRussianPhone } from '@/lib/phone';
 import { TurnstileWidget } from '@/components/TurnstileWidget';
 
@@ -18,6 +19,7 @@ export function LeadForm(_: LeadFormProps) {
   const [calculatorSummary, setCalculatorSummary] = useState('');
   const [turnstileToken, setTurnstileToken] = useState('');
   const [turnstileResetKey, setTurnstileResetKey] = useState(0);
+  const parsedCalculator = parseLeadMessage(calculatorSummary);
 
   useEffect(() => {
     function syncCalculatorSummary(event?: Event) {
@@ -117,7 +119,23 @@ export function LeadForm(_: LeadFormProps) {
       {calculatorSummary && (
         <div className="rounded-2xl border border-power/30 bg-power/10 p-4 text-sm text-zinc-200">
           <b className="text-power">В заявку добавится расчет из калькулятора:</b>
-          <pre className="mt-2 whitespace-pre-wrap font-sans text-zinc-300">{calculatorSummary.replace('[calculator]\n', '').replace('\n[/calculator]', '')}</pre>
+          <div className="mt-3 grid gap-3">
+            {parsedCalculator.calculatorLines.map((line, index) => (
+              <div className="rounded-2xl bg-black/20 p-3" key={`${line.title}-${index}`}>
+                <p className="font-bold text-white">{line.title}</p>
+                <div className="mt-2 grid gap-1 text-zinc-300 sm:grid-cols-3">
+                  <span>Количество: {line.quantity}</span>
+                  <span>Цена: {line.price}</span>
+                  <span className="font-bold text-power">Сумма: {line.total}</span>
+                </div>
+              </div>
+            ))}
+            {parsedCalculator.calculatorTotal ? (
+              <p className="rounded-2xl bg-power/15 p-3 font-black text-power">
+                Итого от: {parsedCalculator.calculatorTotal}
+              </p>
+            ) : null}
+          </div>
         </div>
       )}
       <button className="btn btn-primary">Отправить</button>
