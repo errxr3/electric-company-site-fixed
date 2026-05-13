@@ -118,7 +118,7 @@ export function LeadForm(_: LeadFormProps) {
       <label className="flex items-start gap-3 rounded-2xl border border-white/10 bg-black/20 p-3 text-sm text-zinc-300">
         <input className="mt-1 h-5 w-5 shrink-0 accent-power" defaultChecked name="personalDataConsent" required type="checkbox" />
         <span>
-          Согласен на обработку персональных данных для связи по заявке. Можно снять галочку и не давать согласие, но тогда форма не отправится.{' '}
+          Соглашаюсь на обработку персональных данных.{' '}
           <Link className="font-bold text-power hover:text-white" href="/privacy" target="_blank">
             Политика конфиденциальности
           </Link>
