@@ -35,7 +35,7 @@ export default async function Portfolio({
       <Header />
       <main className="container py-16">
         <p className="font-bold text-power">Тверь и Тверская область</p>
-        <h1 className="mt-2 text-5xl font-black">Портфолио</h1>
+        <h1 className="mt-2 text-4xl font-black sm:text-5xl">Портфолио</h1>
         <div className="mt-10 grid gap-6 md:grid-cols-2">
           {items.length ? (
             items.map((item) => {

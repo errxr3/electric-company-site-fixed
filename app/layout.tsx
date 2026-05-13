@@ -1,5 +1,6 @@
 import './globals.css';
 import type { Metadata } from 'next';
+import type { Viewport } from 'next';
 import type { ReactNode } from 'react';
 import { GlobalLeadNotifications } from '@/components/GlobalLeadNotifications';
 
@@ -39,6 +40,13 @@ export const metadata: Metadata = {
     description: 'Электромонтажные работы под ключ по Твери и Тверской области.',
     images: [{ url: '/logo.webp', width: 512, height: 512, alt: 'VolteForce' }],
   },
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  viewportFit: 'cover',
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

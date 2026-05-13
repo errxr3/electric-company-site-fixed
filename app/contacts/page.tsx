@@ -33,7 +33,7 @@ export default async function Contacts() {
       <main className="container grid gap-8 py-16 lg:grid-cols-[0.95fr_1.05fr]">
         <section>
           <p className="font-bold text-power">Тверь и Тверская область</p>
-          <h1 className="mt-2 text-5xl font-black">Контакты</h1>
+          <h1 className="mt-2 text-4xl font-black sm:text-5xl">Контакты</h1>
           <div className="mt-8 grid gap-3 text-zinc-300">
             <p>Телефон: {settings.phonePrimary}</p>
             <p>Телефон: {settings.phoneSecondary}</p>
