@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { parseLeadMessage } from '@/lib/leadCalculator';
 import { formatRussianPhoneInput, normalizeRussianPhone } from '@/lib/phone';
+import { reachGoal } from '@/lib/yandexMetrika';
 import { TurnstileWidget } from '@/components/TurnstileWidget';
 
 type LeadFormProps = {
@@ -79,6 +80,7 @@ export function LeadForm(_: LeadFormProps) {
       form.reset();
       window.localStorage.removeItem(CALCULATOR_STORAGE_KEY);
       setCalculatorSummary('');
+      reachGoal('lead_form_success');
     } else if (response.error === 'Invalid phone') {
       setErr('Укажите российский номер в формате +7 (999) 123-45-67.');
     } else if (response.error === 'Rate limited') {

@@ -4,6 +4,7 @@ import type { Viewport } from 'next';
 import type { ReactNode } from 'react';
 import { GlobalLeadNotifications } from '@/components/GlobalLeadNotifications';
 import { MobileQuickActions } from '@/components/MobileQuickActions';
+import { YandexMetrika } from '@/components/YandexMetrika';
 
 const siteUrl = 'https://volteforce.ru';
 
@@ -74,6 +75,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="ru">
       <body>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+        <YandexMetrika />
         {children}
         <MobileQuickActions />
         <GlobalLeadNotifications />

@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from 'react';
 import { TurnstileWidget } from '@/components/TurnstileWidget';
+import { reachGoal } from '@/lib/yandexMetrika';
 
 type SubmitState = 'idle' | 'sending' | 'sent' | 'error';
 
@@ -46,6 +47,7 @@ export function PublicReviewForm({ turnstileSiteKey }: { turnstileSiteKey?: stri
       setTurnstileResetKey((value) => value + 1);
       setState('sent');
       setMessage('Спасибо. Отзыв отправлен на проверку и появится после модерации.');
+      reachGoal('review_form_success');
       return;
     }
 
