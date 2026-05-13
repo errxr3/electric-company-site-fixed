@@ -7,7 +7,7 @@ type LeadSummary = {
   newCount: number;
 };
 
-type PushState = 'unsupported' | 'disabled' | 'ready' | 'enabled' | 'error';
+type PushState = 'checking' | 'unsupported' | 'disabled' | 'ready' | 'enabled' | 'error';
 
 const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || '';
 
@@ -26,7 +26,7 @@ function urlBase64ToUint8Array(base64String: string) {
 
 export function AdminLeadNotifier() {
   const [summary, setSummary] = useState<LeadSummary>({ latestId: null, newCount: 0 });
-  const [pushState, setPushState] = useState<PushState>('disabled');
+  const [pushState, setPushState] = useState<PushState>('checking');
   const [message, setMessage] = useState('');
 
   useEffect(() => {
@@ -111,18 +111,51 @@ export function AdminLeadNotifier() {
     }
   }
 
+  async function disablePush() {
+    try {
+      setMessage('');
+      setPushState('checking');
+
+      const registration = await navigator.serviceWorker.ready;
+      const subscription = await registration.pushManager.getSubscription();
+
+      if (subscription) {
+        await fetch('/api/push/subscribe', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ endpoint: subscription.endpoint }),
+        });
+        await subscription.unsubscribe();
+      }
+
+      setPushState('ready');
+      setMessage('Push-уведомления выключены на этом устройстве.');
+    } catch {
+      setPushState('error');
+      setMessage('Не удалось выключить push-уведомления. Попробуйте обновить страницу.');
+    }
+  }
+
   return (
     <div className="flex flex-wrap items-center gap-2 text-sm">
       <span className="rounded-full border border-white/10 px-3 py-2 text-zinc-300">
         Новые заявки: <b className="text-power">{summary.newCount}</b>
       </span>
-      {pushState !== 'unsupported' && pushState !== 'enabled' ? (
+      {pushState === 'checking' ? (
+        <span className="rounded-full border border-white/10 px-3 py-2 text-zinc-500">Проверяем push...</span>
+      ) : null}
+      {(pushState === 'ready' || pushState === 'disabled' || pushState === 'error') ? (
         <button className="btn btn-ghost px-3 py-2 text-sm" onClick={enablePush} type="button">
           Включить push
         </button>
       ) : null}
       {pushState === 'enabled' ? (
-        <span className="rounded-full bg-green-500 px-3 py-2 font-bold text-black">Push включен</span>
+        <>
+          <span className="rounded-full bg-green-500 px-3 py-2 font-bold text-black">Push включен</span>
+          <button className="btn btn-ghost px-3 py-2 text-sm" onClick={disablePush} type="button">
+            Выключить push
+          </button>
+        </>
       ) : null}
       {message ? <span className="text-zinc-400">{message}</span> : null}
     </div>
