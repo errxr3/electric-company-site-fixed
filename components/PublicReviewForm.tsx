@@ -1,31 +1,18 @@
 'use client';
 
-import Script from 'next/script';
-import { useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
+import { TurnstileWidget } from '@/components/TurnstileWidget';
 
 type SubmitState = 'idle' | 'sending' | 'sent' | 'error';
-
-declare global {
-  interface Window {
-    onReviewTurnstileSuccess?: (token: string) => void;
-    onReviewTurnstileExpired?: () => void;
-  }
-}
 
 export function PublicReviewForm({ turnstileSiteKey }: { turnstileSiteKey?: string }) {
   const [state, setState] = useState<SubmitState>('idle');
   const [message, setMessage] = useState('');
   const [turnstileToken, setTurnstileToken] = useState('');
+  const [turnstileResetKey, setTurnstileResetKey] = useState(0);
 
-  useEffect(() => {
-    window.onReviewTurnstileSuccess = (token: string) => setTurnstileToken(token);
-    window.onReviewTurnstileExpired = () => setTurnstileToken('');
-
-    return () => {
-      delete window.onReviewTurnstileSuccess;
-      delete window.onReviewTurnstileExpired;
-    };
-  }, []);
+  const handleTurnstileVerify = useCallback((token: string) => setTurnstileToken(token), []);
+  const handleTurnstileExpire = useCallback(() => setTurnstileToken(''), []);
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -56,6 +43,7 @@ export function PublicReviewForm({ turnstileSiteKey }: { turnstileSiteKey?: stri
     if (res.ok) {
       form.reset();
       setTurnstileToken('');
+      setTurnstileResetKey((value) => value + 1);
       setState('sent');
       setMessage('Спасибо. Отзыв отправлен на проверку и появится после модерации.');
       return;
@@ -89,15 +77,12 @@ export function PublicReviewForm({ turnstileSiteKey }: { turnstileSiteKey?: stri
         type="text"
       />
       {turnstileSiteKey ? (
-        <>
-          <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js" strategy="afterInteractive" />
-          <div
-            className="cf-turnstile"
-            data-callback="onReviewTurnstileSuccess"
-            data-expired-callback="onReviewTurnstileExpired"
-            data-sitekey={turnstileSiteKey}
-          />
-        </>
+        <TurnstileWidget
+          onExpire={handleTurnstileExpire}
+          onVerify={handleTurnstileVerify}
+          resetKey={turnstileResetKey}
+          siteKey={turnstileSiteKey}
+        />
       ) : null}
       <button className="btn btn-primary" disabled={state === 'sending'} type="submit">
         {state === 'sending' ? 'Отправляем...' : 'Отправить отзыв'}

@@ -1,19 +1,12 @@
 'use client';
 
-import Script from 'next/script';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { formatRussianPhoneInput, normalizeRussianPhone } from '@/lib/phone';
+import { TurnstileWidget } from '@/components/TurnstileWidget';
 
 type LeadFormProps = {
   services?: { id: string; title: string }[];
 };
-
-declare global {
-  interface Window {
-    onLeadTurnstileSuccess?: (token: string) => void;
-    onLeadTurnstileExpired?: () => void;
-  }
-}
 
 const CALCULATOR_STORAGE_KEY = 'voltforce-calculator-summary';
 const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '';
@@ -24,6 +17,7 @@ export function LeadForm(_: LeadFormProps) {
   const [phone, setPhone] = useState('');
   const [calculatorSummary, setCalculatorSummary] = useState('');
   const [turnstileToken, setTurnstileToken] = useState('');
+  const [turnstileResetKey, setTurnstileResetKey] = useState(0);
 
   useEffect(() => {
     function syncCalculatorSummary(event?: Event) {
@@ -36,15 +30,8 @@ export function LeadForm(_: LeadFormProps) {
     return () => window.removeEventListener('voltforce-calculator-updated', syncCalculatorSummary);
   }, []);
 
-  useEffect(() => {
-    window.onLeadTurnstileSuccess = (token: string) => setTurnstileToken(token);
-    window.onLeadTurnstileExpired = () => setTurnstileToken('');
-
-    return () => {
-      delete window.onLeadTurnstileSuccess;
-      delete window.onLeadTurnstileExpired;
-    };
-  }, []);
+  const handleTurnstileVerify = useCallback((token: string) => setTurnstileToken(token), []);
+  const handleTurnstileExpire = useCallback(() => setTurnstileToken(''), []);
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -86,6 +73,7 @@ export function LeadForm(_: LeadFormProps) {
       setOk(true);
       setPhone('');
       setTurnstileToken('');
+      setTurnstileResetKey((value) => value + 1);
       form.reset();
       window.localStorage.removeItem(CALCULATOR_STORAGE_KEY);
       setCalculatorSummary('');
@@ -119,15 +107,12 @@ export function LeadForm(_: LeadFormProps) {
       <textarea name="message" placeholder="Что нужно сделать?" rows={4} />
       <input aria-hidden="true" autoComplete="off" className="hidden" name="companySite" tabIndex={-1} type="text" />
       {turnstileSiteKey ? (
-        <>
-          <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js" strategy="afterInteractive" />
-          <div
-            className="cf-turnstile"
-            data-callback="onLeadTurnstileSuccess"
-            data-expired-callback="onLeadTurnstileExpired"
-            data-sitekey={turnstileSiteKey}
-          />
-        </>
+        <TurnstileWidget
+          onExpire={handleTurnstileExpire}
+          onVerify={handleTurnstileVerify}
+          resetKey={turnstileResetKey}
+          siteKey={turnstileSiteKey}
+        />
       ) : null}
       {calculatorSummary && (
         <div className="rounded-2xl border border-power/30 bg-power/10 p-4 text-sm text-zinc-200">
