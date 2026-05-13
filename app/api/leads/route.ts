@@ -6,6 +6,7 @@ import { normalizeRussianPhone } from '@/lib/phone';
 import { prisma } from '@/lib/prisma';
 import { sendNewLeadPush } from '@/lib/push';
 import { getClientIp, hashIp, verifyTurnstile } from '@/lib/requestSecurity';
+import { sendNewLeadTelegram } from '@/lib/telegram';
 import { leadSchema } from '@/lib/validation';
 
 const LEAD_COOLDOWN_MINUTES = 10;
@@ -57,5 +58,14 @@ export async function POST(req: Request) {
 
   await writeAuditLog('create', 'lead', `Поступила новая заявка от ${lead.name}`, lead.id);
   await sendNewLeadPush({ id: lead.id, name: lead.name, phone: lead.phone });
+  await sendNewLeadTelegram({
+    email: lead.email,
+    id: lead.id,
+    message: lead.message,
+    name: lead.name,
+    phone: lead.phone,
+    sourcePath: lead.sourcePath,
+    sourceTitle: lead.sourceTitle,
+  });
   return NextResponse.json(lead, { status: 201 });
 }

@@ -6,6 +6,7 @@ import { hasProfanity } from '@/lib/profanity';
 import { sendNewReviewPush } from '@/lib/push';
 import { getClientIp, hashIp, verifyTurnstile } from '@/lib/requestSecurity';
 import { checkReviewSpam } from '@/lib/reviewSpam';
+import { sendNewReviewTelegram } from '@/lib/telegram';
 import { publicReviewSchema } from '@/lib/validation';
 
 const REVIEW_COOLDOWN_MINUTES = 30;
@@ -89,6 +90,7 @@ export async function POST(req: Request) {
   });
 
   await sendNewReviewPush({ id: review.id, clientName: review.clientName, rating: review.rating });
+  await sendNewReviewTelegram({ id: review.id, clientName: review.clientName, rating: review.rating, text: review.text });
   revalidatePath('/admin/reviews');
   return NextResponse.json({ ok: true });
 }
