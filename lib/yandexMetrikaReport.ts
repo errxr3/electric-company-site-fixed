@@ -1,4 +1,4 @@
-import { sendTelegramMessage } from '@/lib/telegram';
+import { metrikaReplyMarkup, sendTelegramMessage } from '@/lib/telegram';
 import { yandexMetrikaId } from '@/lib/yandexMetrika';
 
 type MetrikaApiResponse = {
@@ -40,14 +40,21 @@ function getMoscowDate() {
 }
 
 export async function sendDailyMetrikaReport() {
+  const report = await getDailyMetrikaReportText();
+  await sendTelegramMessage(report.text, { replyMarkup: metrikaReplyMarkup() });
+  return report.ok ? { ok: true } : { ok: false, error: report.error };
+}
+
+export async function getDailyMetrikaReportText() {
   const token = process.env.YANDEX_METRIKA_TOKEN;
   const counterId = process.env.YANDEX_METRIKA_COUNTER_ID || yandexMetrikaId;
 
   if (!token || !counterId) {
-    await sendTelegramMessage(
-      '📊 <b>Статистика Метрики не отправлена</b>\n\nНе заданы переменные YANDEX_METRIKA_TOKEN или YANDEX_METRIKA_COUNTER_ID.',
-    );
-    return { ok: false, error: 'Metrika config missing' };
+    return {
+      ok: false,
+      error: 'Metrika config missing',
+      text: '📊 <b>Статистика Метрики не отправлена</b>\n\nНе заданы переменные YANDEX_METRIKA_TOKEN или YANDEX_METRIKA_COUNTER_ID.',
+    };
   }
 
   const date = getMoscowDate();
@@ -66,17 +73,19 @@ export async function sendDailyMetrikaReport() {
 
   if (!response.ok) {
     const details = await response.text().catch(() => '');
-    await sendTelegramMessage(
-      `📊 <b>Не удалось получить статистику Метрики</b>\n\nКод: ${response.status}\n${details.slice(0, 500)}`,
-    );
-    return { ok: false, error: `Metrika API ${response.status}` };
+    return {
+      ok: false,
+      error: `Metrika API ${response.status}`,
+      text: `📊 <b>Не удалось получить статистику Метрики</b>\n\nКод: ${response.status}\n${details.slice(0, 500)}`,
+    };
   }
 
   const data = (await response.json()) as MetrikaApiResponse;
   const [visits, users, pageviews, bounceRate, pageDepth, avgDuration] = data.totals || [];
 
-  await sendTelegramMessage(
-    [
+  return {
+    ok: true,
+    text: [
       '📊 <b>Статистика VolteForce за сегодня</b>',
       '',
       `<b>Дата:</b> ${date}`,
@@ -87,7 +96,5 @@ export async function sendDailyMetrikaReport() {
       `<b>Глубина просмотра:</b> ${formatNumber(pageDepth, 2)}`,
       `<b>Среднее время:</b> ${formatDuration(avgDuration)}`,
     ].join('\n'),
-  );
-
-  return { ok: true };
+  };
 }

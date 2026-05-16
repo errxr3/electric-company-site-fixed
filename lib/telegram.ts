@@ -17,6 +17,11 @@ type TelegramReviewPayload = {
   text: string;
 };
 
+type SendTelegramOptions = {
+  chatId?: string | number;
+  replyMarkup?: unknown;
+};
+
 function getTelegramConfig() {
   const botToken = process.env.TELEGRAM_BOT_TOKEN;
   const chatId = process.env.TELEGRAM_CHAT_ID;
@@ -38,7 +43,7 @@ function line(label: string, value?: string | null) {
   return normalized ? `<b>${label}:</b> ${escapeHtml(normalized)}` : '';
 }
 
-export async function sendTelegramMessage(text: string) {
+export async function sendTelegramMessage(text: string, options: SendTelegramOptions = {}) {
   const config = getTelegramConfig();
   if (!config) return;
 
@@ -47,15 +52,46 @@ export async function sendTelegramMessage(text: string) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        chat_id: config.chatId,
+        chat_id: options.chatId || config.chatId,
         disable_web_page_preview: true,
         parse_mode: 'HTML',
+        reply_markup: options.replyMarkup,
         text,
       }),
     });
   } catch {
     // Telegram notifications must never block creating leads or reviews.
   }
+}
+
+export async function answerTelegramCallbackQuery(callbackQueryId: string, text?: string) {
+  const config = getTelegramConfig();
+  if (!config) return;
+
+  try {
+    await fetch(`https://api.telegram.org/bot${config.botToken}/answerCallbackQuery`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        callback_query_id: callbackQueryId,
+        text,
+      }),
+    });
+  } catch {
+    // Callback answers must not block the webhook response.
+  }
+}
+
+export function getTelegramChatId() {
+  return process.env.TELEGRAM_CHAT_ID || '';
+}
+
+export function metrikaReplyMarkup() {
+  return {
+    inline_keyboard: [
+      [{ text: '📊 Обновить статистику', callback_data: 'metrika_today' }],
+    ],
+  };
 }
 
 export async function sendNewLeadTelegram(lead: TelegramLeadPayload) {
