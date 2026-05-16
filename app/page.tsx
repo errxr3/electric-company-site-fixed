@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { LeadForm } from '@/components/LeadForm';
+import { PlatformPresence } from '@/components/PlatformPresence';
 import { PriceCalculator } from '@/components/PriceCalculator';
 import { ServiceAreaMap } from '@/components/ServiceAreaMap';
 import { ServiceCard } from '@/components/ServiceCard';
@@ -108,6 +109,8 @@ export default async function Home() {
             </div>
           ))}
         </section>
+
+        <PlatformPresence />
 
         <section className="container py-12">
           <div className="mb-8">

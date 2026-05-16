@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
+import { PlatformPresence } from '@/components/PlatformPresence';
 import { PublicReviewForm } from '@/components/PublicReviewForm';
 import { formatMoscowDate } from '@/lib/formatDate';
 import { prisma } from '@/lib/prisma';
@@ -47,6 +48,8 @@ export default async function Reviews() {
             </a>
           ))}
         </div>
+
+        <PlatformPresence />
 
         <div className="mt-10 grid gap-6 md:grid-cols-3">
           {reviews.length ? (

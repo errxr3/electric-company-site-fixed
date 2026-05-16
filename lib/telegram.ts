@@ -38,7 +38,7 @@ function line(label: string, value?: string | null) {
   return normalized ? `<b>${label}:</b> ${escapeHtml(normalized)}` : '';
 }
 
-async function sendTelegramMessage(text: string) {
+export async function sendTelegramMessage(text: string) {
   const config = getTelegramConfig();
   if (!config) return;
 

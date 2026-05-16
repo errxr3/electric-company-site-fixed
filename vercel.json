@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/metrika",
+      "schedule": "59 20 * * *"
+    }
+  ]
+}
