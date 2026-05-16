@@ -52,17 +52,6 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const url = new URL(req.url);
-  const allowedSecrets = [
-    process.env.TELEGRAM_WEBHOOK_SECRET,
-    process.env.CRON_SECRET,
-    '10097676',
-  ].filter(Boolean);
-
-  if (allowedSecrets.length && !allowedSecrets.includes(url.searchParams.get('secret') || '')) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
   const update = (await req.json().catch(() => null)) as TelegramUpdate | null;
   if (!update) return NextResponse.json({ ok: true });
 
