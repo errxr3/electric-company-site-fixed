@@ -28,12 +28,26 @@ function isAllowedChat(chatId?: number | string) {
   return Boolean(allowedChatId && String(chatId) === String(allowedChatId));
 }
 
+function chatIdHelpMessage(chatId?: number | string) {
+  return [
+    'Бот получил сообщение, но этот чат не совпадает с TELEGRAM_CHAT_ID в Vercel.',
+    '',
+    `<b>Текущий chat_id:</b> ${chatId || 'не определен'}`,
+    '',
+    'Скопируй этот chat_id в переменную TELEGRAM_CHAT_ID, сделай Redeploy и напиши /start еще раз.',
+  ].join('\n');
+}
+
 async function sendStats(chatId: number | string) {
   const report = await getDailyMetrikaReportText();
   await sendTelegramMessage(report.text, {
     chatId,
     replyMarkup: metrikaReplyMarkup(),
   });
+}
+
+export async function GET() {
+  return NextResponse.json({ ok: true, route: 'telegram-webhook' });
 }
 
 export async function POST(req: Request) {
@@ -51,10 +65,22 @@ export async function POST(req: Request) {
   const callbackChatId = update.callback_query?.message?.chat?.id;
   const chatId = messageChatId || callbackChatId;
 
-  if (!isAllowedChat(chatId)) return NextResponse.json({ ok: true });
-
   const text = update.message?.text?.trim().toLowerCase();
   const callbackData = update.callback_query?.data;
+
+  if (!isAllowedChat(chatId)) {
+    if (text === '/start' || text === '/stat' || callbackData === 'metrika_today') {
+      if (update.callback_query?.id) {
+        await answerTelegramCallbackQuery(update.callback_query.id, 'Нужно обновить TELEGRAM_CHAT_ID.');
+      }
+
+      if (chatId) {
+        await sendTelegramMessage(chatIdHelpMessage(chatId), { chatId });
+      }
+    }
+
+    return NextResponse.json({ ok: true });
+  }
 
   if (callbackData === 'metrika_today') {
     await answerTelegramCallbackQuery(update.callback_query!.id, 'Запрашиваю статистику...');
