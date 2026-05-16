@@ -6,6 +6,7 @@ import { LeadForm } from '@/components/LeadForm';
 import { PriceCalculator } from '@/components/PriceCalculator';
 import { ServiceAreaMap } from '@/components/ServiceAreaMap';
 import { ServiceCard } from '@/components/ServiceCard';
+import { formatMoscowDate } from '@/lib/formatDate';
 import { featuredPriceItems } from '@/lib/priceItems';
 import { prisma } from '@/lib/prisma';
 import { getSiteSettings, phoneHref } from '@/lib/settings';
@@ -158,7 +159,12 @@ export default async function Home() {
             {reviews.map((review) => (
               <div className="card p-6" key={review.id}>
                 <div className="text-power">{'★'.repeat(review.rating)}</div>
-                <b>{review.clientName}</b>
+                <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+                  <b>{review.clientName}</b>
+                  <time className="text-sm text-zinc-500" dateTime={review.createdAt.toISOString()}>
+                    {formatMoscowDate(review.createdAt)}
+                  </time>
+                </div>
                 <p className="mt-3 text-zinc-400">{review.text}</p>
                 {review.companyReply ? (
                   <div className="mt-4 rounded-2xl border border-power/30 bg-power/10 p-4 text-sm">

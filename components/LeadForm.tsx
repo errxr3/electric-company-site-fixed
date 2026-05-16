@@ -138,17 +138,17 @@ export function LeadForm(_: LeadFormProps) {
           <b className="text-power">В заявку добавится расчет из калькулятора:</b>
           <div className="mt-3 grid gap-3">
             {parsedCalculator.calculatorLines.map((line, index) => (
-              <div className="rounded-2xl bg-black/20 p-3" key={`${line.title}-${index}`}>
-                <p className="font-bold text-white">{line.title}</p>
-                <div className="mt-2 grid gap-1 text-zinc-300 sm:grid-cols-3">
+              <div className="min-w-0 rounded-2xl bg-black/20 p-3" key={`${line.title}-${index}`}>
+                <p className="break-words font-bold text-white">{line.title}</p>
+                <div className="mt-2 grid min-w-0 gap-1 text-zinc-300 sm:grid-cols-3">
                   <span>Количество: {line.quantity}</span>
                   <span>Цена: {line.price}</span>
-                  <span className="font-bold text-power">Сумма: {line.total}</span>
+                  <span className="break-words font-bold text-power">Сумма: {line.total}</span>
                 </div>
               </div>
             ))}
             {parsedCalculator.calculatorTotal ? (
-              <p className="rounded-2xl bg-power/15 p-3 font-black text-power">
+              <p className="break-words rounded-2xl bg-power/15 p-3 font-black text-power">
                 Итого от: {parsedCalculator.calculatorTotal}
               </p>
             ) : null}

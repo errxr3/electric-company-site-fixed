@@ -5,6 +5,7 @@ import { priceItems } from '@/lib/priceItems';
 
 const currency = new Intl.NumberFormat('ru-RU');
 const CALCULATOR_STORAGE_KEY = 'voltforce-calculator-summary';
+const MAX_QUANTITY = 999;
 
 export function PriceCalculator() {
   const [quantities, setQuantities] = useState<Record<string, number>>({});
@@ -40,7 +41,8 @@ export function PriceCalculator() {
   }, [summary]);
 
   function setQuantity(id: string, value: string) {
-    const next = Math.max(0, Number(value) || 0);
+    const numericValue = Number(value);
+    const next = Number.isFinite(numericValue) ? Math.min(MAX_QUANTITY, Math.max(0, Math.floor(numericValue))) : 0;
     setQuantities((current) => ({ ...current, [id]: next }));
   }
 
@@ -78,7 +80,9 @@ export function PriceCalculator() {
                       </span>
                       <input
                         aria-label={`Количество: ${item.title}`}
+                        max={MAX_QUANTITY}
                         min="0"
+                        step="1"
                         type="number"
                         value={quantities[item.id] || ''}
                         onChange={(event) => setQuantity(item.id, event.target.value)}

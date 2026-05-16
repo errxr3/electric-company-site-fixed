@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
 import { PublicReviewForm } from '@/components/PublicReviewForm';
+import { formatMoscowDate } from '@/lib/formatDate';
 import { prisma } from '@/lib/prisma';
 
 export const revalidate = 60;
@@ -52,7 +53,12 @@ export default async function Reviews() {
             reviews.map((review) => (
               <article className="card p-6" key={review.id}>
                 <div className="text-power">{'★'.repeat(review.rating)}</div>
-                <h2 className="mt-2 text-xl font-black">{review.clientName}</h2>
+                <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+                  <h2 className="text-xl font-black">{review.clientName}</h2>
+                  <time className="text-sm text-zinc-500" dateTime={review.createdAt.toISOString()}>
+                    {formatMoscowDate(review.createdAt)}
+                  </time>
+                </div>
                 <p className="mt-3 text-zinc-400">{review.text}</p>
                 {review.companyReply ? (
                   <div className="mt-5 rounded-2xl border border-power/30 bg-power/10 p-4">

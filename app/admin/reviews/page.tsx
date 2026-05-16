@@ -6,7 +6,7 @@ import { AdminNav } from '@/components/AdminNav';
 import { ConfirmSubmitButton } from '@/components/ConfirmSubmitButton';
 import { authOptions } from '@/lib/auth';
 import { writeAuditLog } from '@/lib/audit';
-import { formatMoscowDateTime } from '@/lib/formatDate';
+import { formatMoscowDateTime, parseMoscowDateTimeInput, toMoscowDateTimeInput } from '@/lib/formatDate';
 import { prisma } from '@/lib/prisma';
 
 type ReviewStatusValue = 'PENDING' | 'PUBLISHED' | 'HIDDEN' | 'REJECTED';
@@ -39,6 +39,7 @@ async function add(fd: FormData) {
   'use server';
 
   const status = parseStatus(String(fd.get('status'))) || 'PUBLISHED';
+  const createdAt = parseMoscowDateTimeInput(fd.get('createdAt')) || new Date();
   const review = await prisma.review.create({
     data: {
       clientName: String(fd.get('clientName')),
@@ -47,6 +48,7 @@ async function add(fd: FormData) {
       companyReply: String(fd.get('companyReply') || '').trim() || null,
       status,
       isPublished: publishedByStatus(status),
+      createdAt,
     },
   });
 
@@ -61,6 +63,7 @@ async function update(fd: FormData) {
 
   const id = String(fd.get('id'));
   const status = parseStatus(String(fd.get('status'))) || 'PENDING';
+  const createdAt = parseMoscowDateTimeInput(fd.get('createdAt'));
   const review = await prisma.review.update({
     where: { id },
     data: {
@@ -70,6 +73,7 @@ async function update(fd: FormData) {
       companyReply: String(fd.get('companyReply') || '').trim() || null,
       status,
       isPublished: publishedByStatus(status),
+      ...(createdAt ? { createdAt } : {}),
     },
   });
 
@@ -154,6 +158,7 @@ export default async function ReviewsAdmin({
         <h2 className="text-2xl font-black">Добавить отзыв вручную</h2>
         <input name="clientName" placeholder="Клиент" required />
         <input name="rating" type="number" min="1" max="5" placeholder="Рейтинг" required />
+        <input name="createdAt" type="datetime-local" defaultValue={toMoscowDateTimeInput(new Date())} required />
         <textarea name="text" placeholder="Текст" required rows={4} />
         <textarea name="companyReply" placeholder="Ответ компании (необязательно)" rows={3} />
         <select name="status" defaultValue="PUBLISHED">
@@ -181,7 +186,7 @@ export default async function ReviewsAdmin({
               </div>
               <form action={update} className="grid gap-3">
                 <input type="hidden" name="id" value={item.id} />
-                <div className="grid gap-3 md:grid-cols-[1fr_120px_220px]">
+                <div className="grid gap-3 md:grid-cols-[1fr_120px_220px_220px]">
                   <input name="clientName" defaultValue={item.clientName} placeholder="Клиент" required />
                   <input name="rating" type="number" min="1" max="5" defaultValue={item.rating} required />
                   <select name="status" defaultValue={status}>
@@ -191,6 +196,7 @@ export default async function ReviewsAdmin({
                       </option>
                     ))}
                   </select>
+                  <input name="createdAt" type="datetime-local" defaultValue={toMoscowDateTimeInput(item.createdAt)} required />
                 </div>
                 <textarea name="text" defaultValue={item.text} placeholder="Текст" required rows={4} />
                 <textarea name="companyReply" defaultValue={item.companyReply || ''} placeholder="Ответ компании (необязательно)" rows={3} />
