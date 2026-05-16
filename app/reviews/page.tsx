@@ -14,17 +14,6 @@ export const metadata: Metadata = {
   alternates: { canonical: '/reviews' },
 };
 
-const avitoLinks = [
-  {
-    title: 'Отзывы на Авито',
-    href: 'https://www.avito.ru/tver/predlozheniya_uslug/uslugi_elektrika_elektrik_7208285567?utm_campaign=native&utm_medium=item_page_ios&utm_source=soc_sharing_seller',
-  },
-  {
-    title: 'Еще отзывы на Авито',
-    href: 'https://www.avito.ru/tver/predlozheniya_uslug/uslugi_elektrika_4533709856?utm_campaign=native&utm_medium=item_page_ios&utm_source=soc_sharing',
-  },
-];
-
 export default async function Reviews() {
   const reviews = await prisma.review.findMany({
     where: { isPublished: true, status: 'PUBLISHED' },
@@ -40,14 +29,6 @@ export default async function Reviews() {
         <p className="mt-4 max-w-2xl text-zinc-400">Здесь можно оставить отзыв о работе.</p>
 
         <PublicReviewForm turnstileSiteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY} />
-
-        <div className="mt-8 flex flex-wrap gap-3">
-          {avitoLinks.map((link) => (
-            <a className="btn btn-ghost" href={link.href} key={link.href} rel="noreferrer" target="_blank">
-              {link.title}
-            </a>
-          ))}
-        </div>
 
         <PlatformPresence />
 

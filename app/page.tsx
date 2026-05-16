@@ -21,17 +21,6 @@ export const metadata: Metadata = {
   alternates: { canonical: '/' },
 };
 
-const avitoLinks = [
-  {
-    title: 'Авито: услуги электрика',
-    href: 'https://www.avito.ru/tver/predlozheniya_uslug/uslugi_elektrika_elektrik_7208285567?utm_campaign=native&utm_medium=item_page_ios&utm_source=soc_sharing_seller',
-  },
-  {
-    title: 'Авито: электрик',
-    href: 'https://www.avito.ru/tver/predlozheniya_uslug/uslugi_elektrika_4533709856?utm_campaign=native&utm_medium=item_page_ios&utm_source=soc_sharing',
-  },
-];
-
 export default async function Home() {
   const [services, reviews, settings] = await Promise.all([
     prisma.service.findMany({ take: 6, orderBy: { isPopular: 'desc' } }),
@@ -72,19 +61,6 @@ export default async function Home() {
               <a href={phoneHref(settings.phoneSecondary)} className="hover:text-power">
                 {settings.phoneSecondary}
               </a>
-            </div>
-            <div className="mt-6 flex flex-wrap gap-3 text-sm text-zinc-300">
-              {avitoLinks.map((link) => (
-                <a
-                  className="rounded-full border border-white/15 px-4 py-2 hover:border-power hover:text-power"
-                  href={link.href}
-                  key={link.href}
-                  rel="noreferrer"
-                  target="_blank"
-                >
-                  {link.title}
-                </a>
-              ))}
             </div>
           </div>
           <div className="card mb-8 p-5 shadow-glow sm:mb-0 sm:p-8">
