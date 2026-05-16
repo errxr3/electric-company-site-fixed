@@ -26,7 +26,7 @@ function getTelegramConfig() {
   const botToken = process.env.TELEGRAM_BOT_TOKEN;
   const chatId = process.env.TELEGRAM_CHAT_ID;
 
-  if (!botToken || !chatId) return null;
+  if (!botToken) return null;
   return { botToken, chatId };
 }
 
@@ -46,13 +46,15 @@ function line(label: string, value?: string | null) {
 export async function sendTelegramMessage(text: string, options: SendTelegramOptions = {}) {
   const config = getTelegramConfig();
   if (!config) return;
+  const chatId = options.chatId || config.chatId;
+  if (!chatId) return;
 
   try {
     await fetch(`https://api.telegram.org/bot${config.botToken}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        chat_id: options.chatId || config.chatId,
+        chat_id: chatId,
         disable_web_page_preview: true,
         parse_mode: 'HTML',
         reply_markup: options.replyMarkup,
