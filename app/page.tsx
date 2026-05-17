@@ -56,9 +56,6 @@ export default async function Home() {
               <a href="#calculator" className="btn btn-ghost">
                 Рассчитать стоимость
               </a>
-              <a href="/prices" className="btn btn-ghost">
-                Цены
-              </a>
             </div>
             <div className="mt-6 grid gap-2 text-lg font-bold text-white sm:flex sm:flex-wrap sm:gap-4">
               <a href={phoneHref(settings.phonePrimary)} className="hover:text-power">

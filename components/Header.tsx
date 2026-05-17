@@ -3,7 +3,6 @@ import Link from 'next/link';
 
 const nav = [
   { href: '/services', title: 'Услуги', mobile: true },
-  { href: '/prices', title: 'Цены', mobile: true },
   { href: '/#calculator', title: 'Калькулятор', mobile: true },
   { href: '/portfolio', title: 'Портфолио', mobile: true },
   { href: '/reviews', title: 'Отзывы', mobile: true },

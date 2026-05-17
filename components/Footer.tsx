@@ -49,7 +49,6 @@ export async function Footer() {
         <div className="grid content-start gap-3 text-zinc-300">
           <b className="text-white">Навигация</b>
           <Link className="w-fit hover:text-power" href="/services">Услуги</Link>
-          <Link className="w-fit hover:text-power" href="/prices">Цены</Link>
           <Link className="w-fit hover:text-power" href="/portfolio">Портфолио</Link>
           <Link className="w-fit hover:text-power" href="/reviews">Отзывы</Link>
           <Link className="w-fit hover:text-power" href="/contacts">Контакты</Link>

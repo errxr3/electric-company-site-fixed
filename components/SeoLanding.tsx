@@ -60,9 +60,6 @@ export function SeoLanding({ page }: { page: SeoLandingPage }) {
             <Link className="btn btn-ghost" href="/#calculator">
               Рассчитать стоимость
             </Link>
-            <Link className="btn btn-ghost" href="/prices">
-              Смотреть цены
-            </Link>
           </div>
         </div>
         <ServiceAreaMap />
