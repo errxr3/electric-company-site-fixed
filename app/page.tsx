@@ -1,12 +1,14 @@
 import Image from 'next/image';
 import type { Metadata } from 'next';
 import { Header } from '@/components/Header';
+import { FaqSection } from '@/components/FaqSection';
 import { Footer } from '@/components/Footer';
 import { LeadForm } from '@/components/LeadForm';
 import { PlatformPresence } from '@/components/PlatformPresence';
 import { PriceCalculator } from '@/components/PriceCalculator';
 import { ServiceAreaMap } from '@/components/ServiceAreaMap';
 import { ServiceCard } from '@/components/ServiceCard';
+import { commonFaq, faqJsonLd } from '@/lib/faq';
 import { formatMoscowDate } from '@/lib/formatDate';
 import { featuredPriceItems } from '@/lib/priceItems';
 import { prisma } from '@/lib/prisma';
@@ -36,6 +38,7 @@ export default async function Home() {
     <>
       <Header />
       <main>
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd(commonFaq)) }} />
         <section className="container grid items-center gap-8 pb-12 pt-8 lg:min-h-[calc(100vh-5rem)] lg:grid-cols-[1.05fr_0.95fr] lg:py-10">
           <div>
             <p className="mb-4 font-bold text-power">Тверь и Тверская область</p>
@@ -52,6 +55,9 @@ export default async function Home() {
               </a>
               <a href="#calculator" className="btn btn-ghost">
                 Рассчитать стоимость
+              </a>
+              <a href="/prices" className="btn btn-ghost">
+                Цены
               </a>
             </div>
             <div className="mt-6 grid gap-2 text-lg font-bold text-white sm:flex sm:flex-wrap sm:gap-4">
@@ -155,6 +161,8 @@ export default async function Home() {
             ))}
           </div>
         </section>
+
+        <FaqSection faq={commonFaq} />
 
         <section className="container py-12">
           <LeadForm />

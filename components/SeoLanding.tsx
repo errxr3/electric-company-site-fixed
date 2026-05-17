@@ -1,6 +1,8 @@
 import Link from 'next/link';
+import { FaqSection } from '@/components/FaqSection';
 import { LeadForm } from '@/components/LeadForm';
 import { ServiceAreaMap } from '@/components/ServiceAreaMap';
+import { faqJsonLd } from '@/lib/faq';
 import type { SeoLandingPage } from '@/lib/seoLandingPages';
 import { seoLandingLinks } from '@/lib/seoLandingPages';
 
@@ -19,22 +21,33 @@ export function SeoLanding({ page }: { page: SeoLandingPage }) {
       answer: 'Да. Работаем по Твери и Тверской области, условия выезда зависят от адреса и объема работ.',
     },
   ];
-  const faqJsonLd = {
+  const breadcrumbJsonLd = {
     '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    mainEntity: faq.map((item) => ({
-      '@type': 'Question',
-      name: item.question,
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: item.answer,
-      },
-    })),
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Главная', item: 'https://volteforce.ru' },
+      { '@type': 'ListItem', position: 2, name: page.h1, item: `https://volteforce.ru${page.href}` },
+    ],
+  };
+  const serviceJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: page.h1,
+    description: page.description,
+    areaServed: ['Тверь', 'Тверская область'],
+    provider: {
+      '@type': 'Electrician',
+      name: 'VolteForce',
+      url: 'https://volteforce.ru',
+      telephone: '+7 910 835-98-87',
+    },
   };
 
   return (
     <main>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd(faq)) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd) }} />
       <section className="container grid gap-8 py-14 lg:grid-cols-[1fr_0.9fr] lg:items-center">
         <div>
           <p className="font-bold text-power">Тверь и Тверская область</p>
@@ -46,6 +59,9 @@ export function SeoLanding({ page }: { page: SeoLandingPage }) {
             </a>
             <Link className="btn btn-ghost" href="/#calculator">
               Рассчитать стоимость
+            </Link>
+            <Link className="btn btn-ghost" href="/prices">
+              Смотреть цены
             </Link>
           </div>
         </div>
@@ -89,19 +105,7 @@ export function SeoLanding({ page }: { page: SeoLandingPage }) {
         </div>
       </section>
 
-      <section className="container py-10">
-        <div className="card p-6">
-          <h2 className="text-3xl font-black">Вопросы и ответы</h2>
-          <div className="mt-5 grid gap-4">
-            {faq.map((item) => (
-              <div className="rounded-2xl border border-white/10 p-4" key={item.question}>
-                <h3 className="font-black text-white">{item.question}</h3>
-                <p className="mt-2 text-zinc-400">{item.answer}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <FaqSection faq={faq} />
 
       <section className="container py-10" id="lead">
         <LeadForm />
