@@ -246,6 +246,14 @@ label {
 }
 
 @media (max-width: 767px) {
+  .site-header::before {
+    opacity: 0.28;
+    background:
+      linear-gradient(115deg, transparent 0%, transparent 48%, rgba(255, 210, 30, 0.055) 53%, transparent 60%, transparent 100%),
+      radial-gradient(circle at 14% 50%, rgba(255, 210, 30, 0.035), transparent 22%);
+    transform: translateX(-36%);
+  }
+
   .card {
     border-radius: 18px;
   }
