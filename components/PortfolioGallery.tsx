@@ -31,7 +31,7 @@ export function PortfolioGallery({ images, title }: Props) {
   }, [activeIndex, images.length]);
 
   if (images.length === 0) {
-    return <div className="mb-4 rounded-2xl bg-zinc-800 p-10 text-center text-zinc-500">Фото объекта скоро появятся</div>;
+    return <div className="mb-4 rounded-2xl bg-zinc-800 p-10 text-center text-zinc-500">Фото объекта скоро появится</div>;
   }
 
   return (
@@ -64,34 +64,40 @@ export function PortfolioGallery({ images, title }: Props) {
       {activeSrc && (
         <div className="fixed inset-0 z-[100] grid place-items-center bg-black/90 p-4" role="dialog" aria-modal="true">
           <button className="absolute inset-0 cursor-default" onClick={() => setActiveIndex(null)} type="button" aria-label="Закрыть" />
-          <div className="relative z-10 flex h-full max-h-[calc(100vh-2rem)] w-full max-w-6xl items-center justify-center">
-            <button className="btn btn-ghost absolute right-3 top-3 z-20 bg-black/60" onClick={() => setActiveIndex(null)} type="button">
-              Закрыть
-            </button>
-            <Image
-              alt={`${title}, фото во весь экран`}
-              className="max-h-[calc(100vh-2rem)] w-full rounded-2xl object-contain"
-              height={900}
-              priority
-              sizes="100vw"
-              src={activeSrc}
-              width={1280}
-            />
+          <div className="relative z-10 grid max-h-[calc(100vh-2rem)] w-full max-w-6xl grid-rows-[auto_minmax(0,1fr)_auto] gap-3">
+            <div className="flex justify-end">
+              <button className="btn btn-ghost bg-black/60 px-4 py-2" onClick={() => setActiveIndex(null)} type="button">
+                Закрыть
+              </button>
+            </div>
+
+            <div className="flex min-h-0 items-center justify-center">
+              <Image
+                alt={`${title}, фото во весь экран`}
+                className="max-h-[calc(100vh-9rem)] w-full rounded-2xl object-contain"
+                height={900}
+                priority
+                sizes="100vw"
+                src={activeSrc}
+                width={1280}
+              />
+            </div>
+
             {images.length > 1 && (
-              <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-between px-3">
+              <div className="flex items-center justify-center gap-4">
                 <button
-                  className="btn btn-ghost pointer-events-auto bg-black/65 px-4 py-3 disabled:cursor-not-allowed disabled:opacity-35"
+                  className="btn btn-ghost bg-black/60 px-5 py-3 disabled:cursor-not-allowed disabled:opacity-35"
                   disabled={displayIndex === 0}
                   onClick={() => setActiveIndex((current) => (current === null ? current : Math.max(0, current - 1)))}
                   type="button"
                 >
                   Назад
                 </button>
-                <span className="pointer-events-auto absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full border border-white/20 bg-black/65 px-4 py-2 text-sm font-bold text-zinc-200">
+                <span className="min-w-14 rounded-full border border-white/20 bg-black/60 px-4 py-2 text-center text-sm font-bold text-zinc-200">
                   {displayIndex + 1} / {images.length}
                 </span>
                 <button
-                  className="btn btn-ghost pointer-events-auto bg-black/65 px-4 py-3 disabled:cursor-not-allowed disabled:opacity-35"
+                  className="btn btn-ghost bg-black/60 px-5 py-3 disabled:cursor-not-allowed disabled:opacity-35"
                   disabled={displayIndex === images.length - 1}
                   onClick={() => setActiveIndex((current) => (current === null ? current : Math.min(images.length - 1, current + 1)))}
                   type="button"
